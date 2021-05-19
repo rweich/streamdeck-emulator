@@ -1,0 +1,64 @@
+{
+  "name": "@rweich/streamdeck-emulator",
+  "version": "0.0.0-development",
+  "description": "Emulates a streamdeck to speed up plugin development.",
+  "author": "rweich",
+  "license": "MIT",
+  "private": "true",
+  "scripts": {
+    "lint": "eslint ./src/**/*.ts",
+    "lint-tests": "eslint test/**/*.ts",
+    "prepare": "husky install",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@rweich/streamdeck-events": "^1.0.0",
+    "chokidar": "^3.5.1",
+    "eventemitter3": "^4.0.7",
+    "isomorphic-ws": "^4.0.1",
+    "jsdom": "^16.5.1",
+    "loglevel": "^1.7.1",
+    "loglevel-plugin-prefix": "^0.8.4",
+    "ts-log": "^2.2.3",
+    "ws": "^7.4.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^12.1.1",
+    "@commitlint/config-conventional": "^12.1.1",
+    "@rweich/eslint-config": "^1.0.1",
+    "@rweich/prettier-config": "^1.0.0",
+    "@types/jsdom": "^16.2.7",
+    "@types/ws": "^7.4.0",
+    "esm": "^3.2.25",
+    "husky": "^6.0.0",
+    "lint-staged": "^10.5.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "repository": "rweich/streamdeck-emulator",
+  "bugs": "https://github.com/rweich/streamdeck-emulator/issues",
+  "keywords": [
+    "streamdeck",
+    "elgato",
+    "typescript",
+    "emulator"
+  ],
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "@rweich"
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "prettier --write",
+      "eslint --quiet --fix"
+    ]
+  },
+  "prettier": "@rweich/prettier-config"
+}
