@@ -20,7 +20,7 @@
     "loglevel": "^1.7.1",
     "loglevel-plugin-prefix": "^0.8.4",
     "ts-log": "^2.2.3",
-    "ws": "^7.4.4"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.1.1",
