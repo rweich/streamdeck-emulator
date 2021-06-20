@@ -1,5 +1,6 @@
 import { RegisterEvent, SetTitleEvent } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
 
+import { ButtonEventData } from './client/ButtonEventData';
 import EventEmitter from 'eventemitter3';
 import { EventsStreamdeck } from '@rweich/streamdeck-events';
 import { Logger } from 'ts-log';
@@ -7,6 +8,7 @@ import { ReceivedEventTypes } from '@rweich/streamdeck-events/dist/Events/Stream
 
 type EmulatorEvents = {
   'send-to-plugin': (message: unknown) => void;
+  'send-to-display': (title: string) => void;
 };
 
 type EventMapOfUnion<T extends { event: string }> = {
@@ -29,10 +31,7 @@ export default class Emulator {
     this.pluginEvents.on('setTitle', this.onSetTitle.bind(this));
   }
 
-  public on<T extends keyof Pick<EmulatorEvents, 'send-to-plugin'>>(
-    event: T,
-    callback: EventEmitter.EventListener<EmulatorEvents, T>,
-  ): void {
+  public on<T extends keyof EmulatorEvents>(event: T, callback: EventEmitter.EventListener<EmulatorEvents, T>): void {
     this.emulatorEvents.on(event, callback);
   }
 
@@ -53,13 +52,45 @@ export default class Emulator {
     this.pluginEvents.emit(event.event, event as never);
   }
 
+  public onDisplayButtonAdd(event: ButtonEventData): void {
+    this.logger.debug('onDisplayButtonAdd', event);
+    this.emulatorEvents.emit(
+      'send-to-plugin',
+      JSON.stringify(new EventsStreamdeck().willAppear(event.action, event.uid)),
+    );
+  }
+
+  public onDisplayButtonRemove(event: ButtonEventData): void {
+    this.logger.debug('onDisplayButtonRemove', event);
+    // TODO: create event in other package
+    // this.emulatorEvents.emit('send-to-plugin', JSON.stringify(new EventsStreamdeck().will('action', event.uuid)));
+  }
+
   private onRegister(event: RegisterEvent): void {
     this.logger.info('got register event');
-    // TODO: use the data from the manifest (action)
-    this.emulatorEvents.emit('send-to-plugin', JSON.stringify(new EventsStreamdeck().willAppear('action', event.uuid)));
+    /**
+     * send to browser:
+     *  - the new button to show
+     *  - where to show it row/column
+     *
+     * hmmm. it should be already in the browser
+     *  - so user created new button
+     *  - we sent the register event to the plugin
+     *  - the plugin sent it back <- this is where we are
+     */
   }
 
   private onSetTitle(event: SetTitleEvent): void {
     this.logger.debug('got settitle event with title', event.title);
+    /**
+     * things to send:
+     *  - title
+     *  - context/uid
+     *
+     * we need to keep track (somewhere) of
+     *  - all the buttons and their contexts
+     *  - their states
+     */
+    this.emulatorEvents.emit('send-to-display', event.title);
   }
 }
