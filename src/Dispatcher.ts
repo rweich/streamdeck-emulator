@@ -1,3 +1,4 @@
+import Display from './Display';
 import Emulator from './Emulator';
 import EventEmitter from 'eventemitter3';
 import { Logger } from 'ts-log';
@@ -13,13 +14,15 @@ export default class Dispatcher {
   private readonly server: Server;
   private readonly plugin: Plugin;
   private readonly emulator: Emulator;
+  private readonly display: Display;
   private readonly logger: Logger;
   private readonly eventEmitter = new EventEmitter<EventTypes>();
 
-  constructor(server: Server, plugin: Plugin, emulator: Emulator, logger: Logger) {
+  constructor(server: Server, plugin: Plugin, emulator: Emulator, display: Display, logger: Logger) {
     this.server = server;
     this.plugin = plugin;
     this.emulator = emulator;
+    this.display = display;
     this.logger = logger;
   }
 
@@ -32,13 +35,17 @@ export default class Dispatcher {
   public run(): void {
     this.logger.debug('init dispatcher');
     this.server.on('connection', this.onConnection.bind(this));
-    this.plugin.connectTo(this.server.connection);
     this.plugin.on('reset-plugin', () => {
       this.eventEmitter.emit('should-close-ws');
     });
     this.plugin.on('ready', () => {
+      // TODO: instead of this, just send message through ws from here?
+      this.display.onPluginReady('name', 'icon-data');
       this.plugin.connectTo(this.server.connection);
     });
+    this.display.start(this.server.connection);
+    this.display.on('button-add-plugin', this.emulator.onDisplayButtonAdd.bind(this));
+    this.display.on('button-remove-plugin', this.emulator.onDisplayButtonRemove.bind(this));
   }
 
   private onConnection(ws: WebSocket): void {
@@ -47,15 +54,19 @@ export default class Dispatcher {
       this.logger.debug('received message', data);
       const payload = JSON.parse(data.toString());
       if (Dispatcher.isPluginRegisterEvent(payload)) {
-        this.logger.debug('message is plugin register event');
-        this.eventEmitter.once('should-close-ws', () => {
-          this.emulator.off('send-to-plugin');
-          ws.close();
-        });
-        this.emulator.on('send-to-plugin', (message) => ws.send(message));
-        ws.on('message', (data) => this.emulator.onPluginMessage(JSON.parse(data.toString())));
-        ws.emit('message', data);
+        this.onPluginConnection(ws, data);
       }
     });
+  }
+
+  private onPluginConnection(ws: WebSocket, data: WebSocket.Data): void {
+    this.logger.debug('message is plugin register event');
+    this.eventEmitter.once('should-close-ws', () => {
+      this.emulator.off('send-to-plugin');
+      ws.close();
+    });
+    this.emulator.on('send-to-plugin', (message) => ws.send(message));
+    ws.on('message', (data) => this.emulator.onPluginMessage(JSON.parse(data.toString())));
+    ws.emit('message', data);
   }
 }
