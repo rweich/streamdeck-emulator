@@ -68,6 +68,22 @@ export default class Emulator {
     // this.emulatorEvents.emit('send-to-plugin', JSON.stringify(new EventsStreamdeck().will('action', event.uuid)));
   }
 
+  public onDisplayButtonDown(event: ButtonEventData): void {
+    this.logger.debug('onDisplayButtonDown', event);
+    this.emulatorEvents.emit(
+      'send-to-plugin',
+      JSON.stringify(new EventsStreamdeck().keyDown(event.action, event.uid, { column: event.column, row: event.row })),
+    );
+  }
+
+  public onDisplayButtonUp(event: ButtonEventData): void {
+    this.logger.debug('onDisplayButtonUp', event);
+    this.emulatorEvents.emit(
+      'send-to-plugin',
+      JSON.stringify(new EventsStreamdeck().keyUp(event.action, event.uid, { column: event.column, row: event.row })),
+    );
+  }
+
   private onRegister(event: RegisterEvent): void {
     this.logger.info('got register event');
     /**
@@ -83,7 +99,7 @@ export default class Emulator {
   }
 
   private onSetTitle(event: SetTitleEvent): void {
-    this.logger.debug('got settitle event with title', event.title);
+    this.logger.debug(`got settitle event with title "${event.title}"`);
     /**
      * things to send:
      *  - title

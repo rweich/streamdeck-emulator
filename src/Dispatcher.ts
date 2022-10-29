@@ -53,9 +53,13 @@ export default class Dispatcher {
       this.display.onPluginReady('name', 'icon-data');
       this.pluginLoader.connectTo(this.server.connection);
     });
+
     this.display.start(this.server.connection);
     this.display.on('button-add-plugin', (event) => this.emulator.onDisplayButtonAdd(event));
     this.display.on('button-remove-plugin', (event) => this.emulator.onDisplayButtonRemove(event));
+    this.display.on('button-key-down', (event) => this.emulator.onDisplayButtonDown(event));
+    this.display.on('button-key-up', (event) => this.emulator.onDisplayButtonUp(event));
+
     this.emulator.on('send-to-display', (event) => this.display.onEmulatorMessage(event));
   }
 

@@ -3,7 +3,6 @@ import { EventEmitter, EventListener } from 'eventemitter3';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { Logger } from 'ts-log';
 
 import { ButtonEventData } from './browserclient/ButtonEventData';

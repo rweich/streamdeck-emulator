@@ -1231,18 +1231,17 @@
   dependencies:
     prettier "npm:@btmills/prettier"
 
-"@rweich/streamdeck-events@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@rweich/streamdeck-events/-/streamdeck-events-4.0.0.tgz#8144d12ee142cdce88f2e74735267228fa70eccc"
-  integrity sha512-z2ac2shyePVCUqpz8ynHfdyivbd6/Ec9+RuokvjC2OzDPnE4xkso3gw/+fHPiiAwmy1xDqMjFmw2Zg8Y/2aAcg==
+"@rweich/streamdeck-events@/var/www/js/streamdeck-events/rweich-streamdeck-events-v3.1.4.tgz":
+  version "3.1.4"
+  resolved "/var/www/js/streamdeck-events/rweich-streamdeck-events-v3.1.4.tgz#cdb3a7eb5d88c6c6eefe1fb7d6b7a96c8e290fd9"
   dependencies:
-    "@sinclair/typebox" "0.24.48"
+    "@sinclair/typebox" "0.23.4"
     ajv "^8.6.2"
 
-"@sinclair/typebox@0.24.48":
-  version "0.24.48"
-  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.48.tgz#bd558c6059df563d49a4d94df8e8e0510b662e3f"
-  integrity sha512-WPGpRNHbkOsfBDmh8QHU7a5NWzEuYNThST8x1cISvX0RpP+1+V8zjuJqNwGJkHGIlhdIIhv6qVYqXz2q5/gjAA==
+"@sinclair/typebox@0.23.4":
+  version "0.23.4"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.23.4.tgz#6ff93fd2585ce44f7481c9ff6af610fbb5de98a4"
+  integrity sha512-0/WqSvpVbCBAV1yPeko7eAczKbs78dNVAaX14quVlwOb2wxfKuXCx91h4NrEfkYK9zEnyVSW4JVI/trP3iS+Qg==
 
 "@socket.io/component-emitter@~3.1.0":
   version "3.1.0"

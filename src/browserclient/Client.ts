@@ -56,6 +56,10 @@ export default class Client {
     for (const button of document.querySelectorAll('.action__button-remove')) {
       button.addEventListener('click', this.onButtonRemove.bind(this));
     }
+    for (const button of document.querySelectorAll('.action__button-click')) {
+      button.addEventListener('mousedown', this.onButtonDown.bind(this));
+      button.addEventListener('mouseup', this.onButtonUp.bind(this));
+    }
   }
 
   private onButtonAdd(event: Event): void {
@@ -64,6 +68,32 @@ export default class Client {
 
   private onButtonRemove(event: Event): void {
     this.toggleButton(event, 'removePlugin');
+  }
+
+  private onButtonDown(event: Event): void {
+    const { row, column } = this.getEventData(event);
+    this.sendMessage({
+      payload: {
+        action: 'getthisfromtheplugininfo',
+        column,
+        row,
+        uid: 'random',
+      },
+      type: 'keyDown',
+    });
+  }
+
+  private onButtonUp(event: Event): void {
+    const { row, column } = this.getEventData(event);
+    this.sendMessage({
+      payload: {
+        action: 'getthisfromtheplugininfo',
+        column,
+        row,
+        uid: 'random',
+      },
+      type: 'keyUp',
+    });
   }
 
   private toggleButton(event: Event, type: 'addPlugin' | 'removePlugin'): void {
