@@ -1,12 +1,12 @@
 import './index.scss';
 
 import WebSocket, { MessageEvent } from 'isomorphic-ws';
-import { is, isNumber } from 'ts-type-guards';
-
-import { ClientEvent } from './ClientEvent';
 import { Logger } from 'ts-log';
-import logger from '../Logger';
+import { is, isNumber } from 'ts-type-guards';
 import whenDomReady from 'when-dom-ready';
+
+import logger from '../Logger';
+import { ClientEvent } from './ClientEvent';
 
 declare global {
   interface Window {

@@ -4,11 +4,11 @@ import * as webpack from 'webpack';
 const config = (environment: unknown, options: { mode: string; env: unknown }): webpack.Configuration => {
   return {
     entry: {
-      bundle: './src/client/index.ts',
+      bundle: './src/browserclient/index.ts',
     },
     target: 'web',
     output: {
-      path: path.resolve(__dirname, 'dist/client'),
+      path: path.resolve(__dirname, 'dist/browserclient'),
     },
     plugins: [],
     module: {

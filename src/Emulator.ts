@@ -1,10 +1,10 @@
-import { RegisterEvent, SetTitleEvent } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
-
-import { ButtonEventData } from './client/ButtonEventData';
-import EventEmitter from 'eventemitter3';
 import { EventsStreamdeck } from '@rweich/streamdeck-events';
-import { Logger } from 'ts-log';
+import { RegisterEvent, SetTitleEvent } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
 import { ReceivedEventTypes } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received/ReceivedEventTypes';
+import { EventEmitter, EventListener } from 'eventemitter3';
+import { Logger } from 'ts-log';
+
+import { ButtonEventData } from './browserclient/ButtonEventData';
 
 type EmulatorEvents = {
   'send-to-plugin': (message: unknown) => void;
@@ -17,7 +17,9 @@ type EventMapOfUnion<T extends { event: string }> = {
 type PluginEvents = EventMapOfUnion<ReceivedEventTypes>;
 
 /**
- * I am emulating the streamdeck
+ * Emulates the streamdeck "core"
+ * Keeps track of the state of all the buttons.
+ * Handles the plugins messages.
  */
 export default class Emulator {
   private logger: Logger;
@@ -31,7 +33,7 @@ export default class Emulator {
     this.pluginEvents.on('setTitle', this.onSetTitle.bind(this));
   }
 
-  public on<T extends keyof EmulatorEvents>(event: T, callback: EventEmitter.EventListener<EmulatorEvents, T>): void {
+  public on<T extends keyof EmulatorEvents>(event: T, callback: EventListener<EmulatorEvents, T>): void {
     this.emulatorEvents.on(event, callback);
   }
 

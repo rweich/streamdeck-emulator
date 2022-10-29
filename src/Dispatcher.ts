@@ -1,27 +1,29 @@
+import { EventEmitter } from 'eventemitter3';
+import { Logger } from 'ts-log';
+import { Data as WebSocketData, WebSocket } from 'ws';
+
 import Display from './Display';
 import Emulator from './Emulator';
-import EventEmitter from 'eventemitter3';
-import { Logger } from 'ts-log';
-import { Plugin } from './plugin';
+import { PluginLoader } from './pluginloader';
 import Server from './Server';
-import WebSocket from 'ws';
 
 type EventTypes = {
   /** signals that we need to close the plugins websocket */
   'close-plugin-websocket': () => void;
 };
 
+/** takes events from the Server, Plugin, etc. and forwards them to the correct recipient */
 export default class Dispatcher {
   private readonly server: Server;
-  private readonly plugin: Plugin;
+  private readonly pluginLoader: PluginLoader;
   private readonly emulator: Emulator;
   private readonly display: Display;
   private readonly logger: Logger;
   private readonly eventEmitter = new EventEmitter<EventTypes>();
 
-  constructor(server: Server, plugin: Plugin, emulator: Emulator, display: Display, logger: Logger) {
+  constructor(server: Server, plugin: PluginLoader, emulator: Emulator, display: Display, logger: Logger) {
     this.server = server;
-    this.plugin = plugin;
+    this.pluginLoader = plugin;
     this.emulator = emulator;
     this.display = display;
     this.logger = logger;
@@ -43,13 +45,13 @@ export default class Dispatcher {
   public run(): void {
     this.logger.debug('init dispatcher');
     this.server.on('connection', this.onConnection.bind(this));
-    this.plugin.on('reset-plugin', () => {
+    this.pluginLoader.on('reset-plugin', () => {
       this.eventEmitter.emit('close-plugin-websocket');
     });
-    this.plugin.on('ready', () => {
+    this.pluginLoader.on('ready', () => {
       // TODO: instead of this, just send message through ws from here?
       this.display.onPluginReady('name', 'icon-data');
-      this.plugin.connectTo(this.server.connection);
+      this.pluginLoader.connectTo(this.server.connection);
     });
     this.display.start(this.server.connection);
     this.display.on('button-add-plugin', (event) => this.emulator.onDisplayButtonAdd(event));
@@ -70,7 +72,7 @@ export default class Dispatcher {
     });
   }
 
-  private onPluginConnection(ws: WebSocket, data: WebSocket.Data): void {
+  private onPluginConnection(ws: WebSocket, data: WebSocketData): void {
     this.logger.debug('message is plugin register event');
     this.eventEmitter.once('close-plugin-websocket', () => {
       this.emulator.off('send-to-plugin');

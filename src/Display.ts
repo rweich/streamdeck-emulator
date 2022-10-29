@@ -1,12 +1,14 @@
-import { ButtonEventData } from './client/ButtonEventData';
-import { ClientEvent } from './client/ClientEvent';
-import { ConnectionType } from './Server';
-import EventEmitter from 'eventemitter3';
-import { Logger } from 'ts-log';
 import browserSync from 'browser-sync';
-import fs from 'fs';
-import http from 'http';
-import path from 'path';
+import { EventEmitter, EventListener } from 'eventemitter3';
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Logger } from 'ts-log';
+
+import { ButtonEventData } from './browserclient/ButtonEventData';
+import { ClientEvent } from './browserclient/ClientEvent';
+import { ConnectionType } from './Server';
 
 type EventTypes = {
   /** when the plugin gets added to a button */
@@ -21,6 +23,7 @@ type EventTypes = {
   'send-to-client': (message: string) => void;
 };
 
+/** emulates the streamdeck display and handles everything related to the browserclient */
 export default class Display {
   private readonly eventEmitter = new EventEmitter<EventTypes>();
   private readonly logger: Logger;
@@ -30,21 +33,23 @@ export default class Display {
   }
 
   public onPluginReady(name: string, iconData: string): void {
-    // send info to browser..
+    // send info to browser ...
   }
 
-  public on<K extends keyof EventTypes>(event: K, callback: EventEmitter.EventListener<EventTypes, K>): void {
+  public on<K extends keyof EventTypes>(event: K, callback: EventListener<EventTypes, K>): void {
     this.eventEmitter.on(event, callback);
   }
 
   public start(connection: ConnectionType): void {
     this.logger.info('starting display-module');
+    // eslint-disable-next-line unicorn/prefer-module
+    const dirname = __dirname;
     browserSync({
       middleware: [
         {
           handle: (request: http.IncomingMessage, response: http.ServerResponse) => {
             this.logger.info('index was requested');
-            const content = String(fs.readFileSync(path.resolve(__dirname + '/client/index.html')))
+            const content = String(fs.readFileSync(path.resolve(dirname + '/browserclient/index.html')))
               .replace('{STREAMDECK_HOST}', connection.host)
               .replace('{STREAMDECK_PORT}', String(connection.port));
             response.end(content);
@@ -52,7 +57,7 @@ export default class Display {
           route: '/',
         },
       ],
-      server: [path.resolve(__dirname + '/client'), path.resolve(__dirname + '/../dist/client')],
+      server: [path.resolve(dirname + '/browserclient'), path.resolve(dirname + '/../dist/browserclient')],
     });
   }
 

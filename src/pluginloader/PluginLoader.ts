@@ -1,12 +1,13 @@
+import { EventEmitter, EventListener } from 'eventemitter3';
 import { JSDOM, VirtualConsole } from 'jsdom';
-
-import { ConnectionType } from '../Server';
-import EventEmitter from 'eventemitter3';
-import FileWatcher from './FileWatcher';
-import { PluginEvents } from './index';
 import { RootLogger } from 'loglevel';
 
-export default class Plugin {
+import { ConnectionType } from '../Server';
+import FileWatcher from './FileWatcher';
+import { PluginEvents } from './index';
+
+/** Loads the plugin, watches for changes in the plugins source (and then reloads it) */
+export default class PluginLoader {
   private readonly pluginPath: string;
   private readonly eventEmitter = new EventEmitter<PluginEvents>();
   private readonly fileWatcher: FileWatcher;
@@ -27,7 +28,7 @@ export default class Plugin {
     this.eventEmitter.emit('connect-ws', connection);
   }
 
-  public on<T extends keyof PluginEvents>(event: T, callback: EventEmitter.EventListener<PluginEvents, T>): void {
+  public on<T extends keyof PluginEvents>(event: T, callback: EventListener<PluginEvents, T>): void {
     this.eventEmitter.on(event, callback);
   }
 

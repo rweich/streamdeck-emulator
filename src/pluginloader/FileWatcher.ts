@@ -1,6 +1,7 @@
-import EventEmitter from 'eventemitter3';
-import { FileWatcherEvents } from './FileWatcherEvents';
 import chokidar from 'chokidar';
+import EventEmitter from 'eventemitter3';
+
+import { FileWatcherEvents } from './FileWatcherEvents';
 
 export default class FileWatcher {
   private readonly eventEmitter = new EventEmitter<FileWatcherEvents>();
