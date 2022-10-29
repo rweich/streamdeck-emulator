@@ -1,6 +1,19 @@
 body {
-  color: #c7c7c7;
   background-color: #383838;
+  color: #c7c7c7;
+
+  display: grid;
+  grid-template-rows: 2fr min-content;
+  grid-template-columns: min-content 1fr 1fr 1fr 1fr;
+  column-gap: 10px;
+  row-gap: 10px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+  row-gap: 10px;
 }
 
 .action__display {

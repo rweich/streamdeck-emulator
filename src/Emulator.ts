@@ -1,5 +1,9 @@
 import { EventsStreamdeck } from '@rweich/streamdeck-events';
-import { RegisterEvent, SetTitleEvent } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
+import {
+  GetSettingsEvent,
+  RegisterEvent,
+  SetTitleEvent,
+} from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
 import { ReceivedEventTypes } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received/ReceivedEventTypes';
 import { EventEmitter, EventListener } from 'eventemitter3';
 import { Logger } from 'ts-log';
@@ -31,6 +35,7 @@ export default class Emulator {
 
     this.pluginEvents.on('register', this.onRegister.bind(this));
     this.pluginEvents.on('setTitle', this.onSetTitle.bind(this));
+    this.pluginEvents.on('getSettings', this.onGetSettings.bind(this));
   }
 
   public on<T extends keyof EmulatorEvents>(event: T, callback: EventListener<EmulatorEvents, T>): void {
@@ -64,8 +69,10 @@ export default class Emulator {
 
   public onDisplayButtonRemove(event: ButtonEventData): void {
     this.logger.debug('onDisplayButtonRemove', event);
-    // TODO: create event in other package
-    // this.emulatorEvents.emit('send-to-plugin', JSON.stringify(new EventsStreamdeck().will('action', event.uuid)));
+    this.emulatorEvents.emit(
+      'send-to-plugin',
+      JSON.stringify(new EventsStreamdeck().willDisappear(event.action, event.uid)),
+    );
   }
 
   public onDisplayButtonDown(event: ButtonEventData): void {
@@ -110,5 +117,11 @@ export default class Emulator {
      *  - their states
      */
     this.emulatorEvents.emit('send-to-display', event.title);
+  }
+
+  private onGetSettings(event: GetSettingsEvent): void {
+    this.logger.debug(`got getsettings event`, event);
+    // todo: get settings from somewhere(?)
+    //  send settings back to plugin -> didreceivesettings
   }
 }

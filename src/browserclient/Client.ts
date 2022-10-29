@@ -40,37 +40,29 @@ export default class Client {
     webSocket.addEventListener('open', () => {
       webSocket.send(JSON.stringify(HelloEvent));
     });
-    webSocket.addEventListener('message', this.onMessage.bind(this));
+    webSocket.addEventListener('message', this.onMessageFromWebsocket.bind(this));
     return webSocket;
-  }
-
-  private onMessage(messageEvent: MessageEvent): void {
-    this.logger.info('got message from websocket:', messageEvent);
-    this.setTitle(String(messageEvent.data));
   }
 
   private addEventListeners(): void {
     for (const button of document.querySelectorAll('.action__button-add')) {
-      button.addEventListener('click', this.onButtonAdd.bind(this));
+      button.addEventListener('click', (event) => this.toggleButton(event, 'addPlugin'));
     }
     for (const button of document.querySelectorAll('.action__button-remove')) {
-      button.addEventListener('click', this.onButtonRemove.bind(this));
+      button.addEventListener('click', (event) => this.toggleButton(event, 'removePlugin'));
     }
     for (const button of document.querySelectorAll('.action__button-click')) {
-      button.addEventListener('mousedown', this.onButtonDown.bind(this));
-      button.addEventListener('mouseup', this.onButtonUp.bind(this));
+      button.addEventListener('mousedown', (event) => this.sendKeyEvent(event, 'keyDown'));
+      button.addEventListener('mouseup', (event) => this.sendKeyEvent(event, 'keyUp'));
     }
   }
 
-  private onButtonAdd(event: Event): void {
-    this.toggleButton(event, 'addPlugin');
+  private onMessageFromWebsocket(messageEvent: MessageEvent): void {
+    this.log('info', 'got message from websocket:', messageEvent);
+    this.setTitle(String(messageEvent.data));
   }
 
-  private onButtonRemove(event: Event): void {
-    this.toggleButton(event, 'removePlugin');
-  }
-
-  private onButtonDown(event: Event): void {
+  private sendKeyEvent(event: Event, type: 'keyDown' | 'keyUp'): void {
     const { row, column } = this.getEventData(event);
     this.sendMessage({
       payload: {
@@ -79,20 +71,7 @@ export default class Client {
         row,
         uid: 'random',
       },
-      type: 'keyDown',
-    });
-  }
-
-  private onButtonUp(event: Event): void {
-    const { row, column } = this.getEventData(event);
-    this.sendMessage({
-      payload: {
-        action: 'getthisfromtheplugininfo',
-        column,
-        row,
-        uid: 'random',
-      },
-      type: 'keyUp',
+      type: type,
     });
   }
 
@@ -126,7 +105,19 @@ export default class Client {
     return { column, row };
   }
 
-  private getActionElement(column: number, row: number): HTMLElement {
+  private sendMessage(message: ClientEvent): void {
+    this.log('info', 'sending ws-message', message);
+    this.websocket.send(JSON.stringify(message));
+  }
+
+  private setTitle(data: string): void {
+    const titleElement = this.getButtonContainer(0, 0).querySelector('.action__display');
+    if (is(HTMLElement)(titleElement)) {
+      titleElement.innerHTML = data.replace('\n', '<br>');
+    }
+  }
+
+  private getButtonContainer(column: number, row: number): HTMLElement {
     const element = document.querySelector(`.action[data-row="${row}"][data-column="${column}"]`);
     if (!is(HTMLElement)(element)) {
       throw new Error('could not find action element');
@@ -134,15 +125,7 @@ export default class Client {
     return element;
   }
 
-  private sendMessage(message: ClientEvent): void {
-    this.logger.info('sending ws-message', message);
-    this.websocket.send(JSON.stringify(message));
-  }
-
-  private setTitle(data: string): void {
-    const titleElement = this.getActionElement(0, 0).querySelector('.action__display');
-    if (is(HTMLElement)(titleElement)) {
-      titleElement.innerHTML = data.replace('\n', '<br>');
-    }
+  private log(type: keyof Logger, message: string, ...optionalArguments: unknown[]): void {
+    Reflect.apply(this.logger[type], this, [message, ...optionalArguments]);
   }
 }
