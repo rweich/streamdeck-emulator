@@ -1295,6 +1295,11 @@
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.23.4.tgz#6ff93fd2585ce44f7481c9ff6af610fbb5de98a4"
   integrity sha512-0/WqSvpVbCBAV1yPeko7eAczKbs78dNVAaX14quVlwOb2wxfKuXCx91h4NrEfkYK9zEnyVSW4JVI/trP3iS+Qg==
 
+"@sinclair/typebox@^0.25.1":
+  version "0.25.1"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.25.1.tgz#8caa80c24e0be5f909ce2439a0600dae3937c23c"
+  integrity sha512-ij7duiwNUyqplvhAqBXJAHNAT+ozsyUhmC5mLO7PqyHOAk1G91d3ITF2h9LIDbYLP5PSTNYpcxYstU+4Y4i3aQ==
+
 "@socket.io/component-emitter@~3.1.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@socket.io/component-emitter/-/component-emitter-3.1.0.tgz#96116f2a912e0c02817345b3c10751069920d553"

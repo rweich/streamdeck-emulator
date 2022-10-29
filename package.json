@@ -18,6 +18,8 @@
     "@livy/dom-handler": "^1.0.3",
     "@livy/logger": "^1.0.5",
     "@rweich/streamdeck-events": "/var/www/js/streamdeck-events/rweich-streamdeck-events-v3.1.4.tgz",
+    "@sinclair/typebox": "^0.25.1",
+    "ajv": "^8.11.0",
     "browser-sync": "^2.26.14",
     "chokidar": "^3.5.1",
     "eventemitter3": "^4.0.7",

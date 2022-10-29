@@ -5,6 +5,7 @@ import { RootLogger } from 'loglevel';
 import { ConnectionType } from '../Server';
 import FileWatcher from './FileWatcher';
 import { PluginEvents } from './index';
+import { readManifest } from './Manifest';
 
 /** Loads the plugin, watches for changes in the plugins source (and then reloads it) */
 export default class PluginLoader {
@@ -34,7 +35,11 @@ export default class PluginLoader {
 
   private createDOM(): void {
     this.logger.info('createDOM called - fromfile', this.pluginPath);
-    JSDOM.fromFile(this.pluginPath, {
+
+    const manifest = readManifest(`${this.pluginPath}/manifest.json`);
+    this.logger.info(`loading plugin from: ${this.pluginPath}/${manifest.CodePath}`);
+
+    JSDOM.fromFile(`${this.pluginPath}/${manifest.CodePath}`, {
       resources: 'usable',
       runScripts: 'dangerously',
       virtualConsole: this.createVirtualConsole(),
