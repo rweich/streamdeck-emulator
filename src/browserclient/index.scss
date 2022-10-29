@@ -1,6 +1,8 @@
 body {
   background-color: #383838;
   color: #c7c7c7;
+  margin: 10px;
+  height: calc(100vh - 20px);
 
   display: grid;
   grid-template-rows: 2fr min-content;
@@ -12,13 +14,30 @@ body {
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: min-content;
   column-gap: 10px;
   row-gap: 10px;
 }
 
 .action__display {
   border: 1px solid white;
+  cursor: pointer;
   display: inline-block;
   height: 100px;
   width: 100px;
+}
+
+.log {
+  height: 100%;
+  overflow: auto;
+
+  // the following styles override the ones from @livy/html-pretty-formatter
+  // as they're inline styles, we need the !importants :sadpanda:
+  [role="listitem"] {
+    background: #242424 !important;
+
+    span:first-child {
+      color: #c6c6c6 !important;
+    }
+  }
 }

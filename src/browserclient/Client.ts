@@ -1,11 +1,13 @@
 import './index.scss';
 
+import { BrowserConsoleHandler } from '@livy/browser-console-handler';
+import { DomHandler } from '@livy/dom-handler';
+import { createLogger } from '@livy/logger';
+import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import WebSocket, { MessageEvent } from 'isomorphic-ws';
-import { Logger } from 'ts-log';
 import { is, isNumber } from 'ts-type-guards';
 import whenDomReady from 'when-dom-ready';
 
-import logger from '../Logger';
 import { ClientEvent } from './ClientEvent';
 
 declare global {
@@ -20,11 +22,15 @@ const HelloEvent = {
 
 export default class Client {
   private readonly websocket: WebSocket;
-  private readonly logger: Logger;
+  private readonly logger: MixedLogger;
 
   constructor() {
-    this.logger = logger.getLogger('Client');
+    this.logger = createLogger('my-app-logger', {
+      handlers: [new BrowserConsoleHandler({ timestamps: true })],
+      mode: 'mixed',
+    }) as MixedLogger;
     this.logger.info('started client', window.___streamdeck_connect);
+
     this.websocket = this.createWebsocket();
     whenDomReady()
       .then(() => this.addEventListeners())
@@ -51,14 +57,20 @@ export default class Client {
     for (const button of document.querySelectorAll('.action__button-remove')) {
       button.addEventListener('click', (event) => this.toggleButton(event, 'removePlugin'));
     }
-    for (const button of document.querySelectorAll('.action__button-click')) {
+    for (const button of document.querySelectorAll('.action__display')) {
       button.addEventListener('mousedown', (event) => this.sendKeyEvent(event, 'keyDown'));
       button.addEventListener('mouseup', (event) => this.sendKeyEvent(event, 'keyUp'));
     }
+
+    const clientLogContainer = document.querySelector('.log--client');
+    if (clientLogContainer === null) {
+      throw new Error('couldnt find client log container');
+    }
+    this.logger.handlers.add(new DomHandler(clientLogContainer));
   }
 
   private onMessageFromWebsocket(messageEvent: MessageEvent): void {
-    this.log('info', 'got message from websocket:', messageEvent);
+    this.logger.info('got message from websocket:', { title: messageEvent.data });
     this.setTitle(String(messageEvent.data));
   }
 
@@ -76,7 +88,7 @@ export default class Client {
   }
 
   private toggleButton(event: Event, type: 'addPlugin' | 'removePlugin'): void {
-    this.logger.debug('toggleButton', type);
+    this.logger.debug('toggleButton', { type });
     const { row, column } = this.getEventData(event);
     this.sendMessage({
       payload: {
@@ -90,8 +102,8 @@ export default class Client {
   }
 
   private getEventData(event: Event): { row: number; column: number } {
-    if (!is(HTMLButtonElement)(event.target)) {
-      throw new Error('togglebutton is no button');
+    if (!is(HTMLElement)(event.target)) {
+      throw new Error('togglebutton is no htmlelement');
     }
     const actionElement = event.target.closest('.action');
     if (!is(HTMLElement)(actionElement)) {
@@ -106,7 +118,7 @@ export default class Client {
   }
 
   private sendMessage(message: ClientEvent): void {
-    this.log('info', 'sending ws-message', message);
+    this.logger.info('sending ws-message', message);
     this.websocket.send(JSON.stringify(message));
   }
 
@@ -123,9 +135,5 @@ export default class Client {
       throw new Error('could not find action element');
     }
     return element;
-  }
-
-  private log(type: keyof Logger, message: string, ...optionalArguments: unknown[]): void {
-    Reflect.apply(this.logger[type], this, [message, ...optionalArguments]);
   }
 }

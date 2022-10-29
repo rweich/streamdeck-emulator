@@ -14,6 +14,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@livy/browser-console-handler": "^1.0.3",
+    "@livy/dom-handler": "^1.0.3",
+    "@livy/logger": "^1.0.5",
     "@rweich/streamdeck-events": "/var/www/js/streamdeck-events/rweich-streamdeck-events-v3.1.4.tgz",
     "browser-sync": "^2.26.14",
     "chokidar": "^3.5.1",

@@ -28,10 +28,18 @@ const config = (environment: unknown, options: { mode: string; env: unknown }): 
             "sass-loader",
           ],
         },
+        {
+          test: /\.mjs$/,
+          type: "javascript/auto",
+          resolve: {
+            fullySpecified: false
+          }
+        }
       ],
     },
     resolve: {
       extensions: ['.ts', '.js'],
+      fallback: { "buffer": false, "os": false }
     },
     optimization: {
       splitChunks: {},
