@@ -7,13 +7,13 @@ import logger from './Logger';
 import { FileWatcher, PluginLoader } from './pluginloader';
 import Server from './Server';
 
-const file = path.resolve(process.cwd(), process.argv[2]);
+const pluginPath = path.resolve(process.cwd(), process.argv[2]);
 
 const dispatcher = new Dispatcher(
   new Server(logger.getLogger('server')),
-  new PluginLoader(file, new FileWatcher(), logger),
+  new PluginLoader(pluginPath, new FileWatcher(), logger),
   new Emulator(logger.getLogger('emulator')),
-  new Display(logger.getLogger('display')),
+  new Display(pluginPath, logger.getLogger('display')),
   logger.getLogger('dispatcher'),
 );
 dispatcher.run();

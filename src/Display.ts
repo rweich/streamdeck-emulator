@@ -7,7 +7,9 @@ import { Logger } from 'ts-log';
 
 import { ButtonEventData } from './browserclient/ButtonEventData';
 import { ClientEvent } from './browserclient/ClientEvent';
+import { ManifestType } from './pluginloader/ManifestType';
 import { ConnectionType } from './Server';
+import { type InitMessage, type SetTitleMessage } from './types/SendToClientMessageTypes';
 
 type EventTypes = {
   /** when the plugin gets added to a button */
@@ -19,28 +21,42 @@ type EventTypes = {
   /** when the button gets released */
   'button-key-up': (event: ButtonEventData) => void;
   /** signals that the message should be sent to the client-ws */
-  'send-to-client': (message: string) => void;
+  'send-to-client': (event: SetTitleMessage | InitMessage) => void;
 };
 
 /** emulates the streamdeck display and handles everything related to the browserclient */
 export default class Display {
   private readonly eventEmitter = new EventEmitter<EventTypes>();
+  private readonly pluginPath: string;
   private readonly logger: Logger;
+  private pluginManifest: ManifestType | undefined;
 
-  constructor(logger: Logger) {
+  constructor(pluginPath: string, logger: Logger) {
+    this.pluginPath = pluginPath;
     this.logger = logger;
   }
 
-  public onPluginReady(name: string, iconData: string): void {
-    // send info to browser ...
+  public onPluginReady(manifest: ManifestType): void {
+    this.pluginManifest = manifest;
+    this.logger.info('onPluginReady - sending init event to the client (even if it might not be ready yet)');
+    this.eventEmitter.emit('send-to-client', { manifest, type: 'init' });
   }
 
   public on<K extends keyof EventTypes>(event: K, callback: EventListener<EventTypes, K>): void {
     this.eventEmitter.on(event, callback);
   }
 
-  public start(connection: ConnectionType): void {
-    this.logger.info('starting display-module');
+  public onClientInit(): void {
+    if (this.pluginManifest === undefined) {
+      this.logger.debug('onClientInit - plugin not ready yet - cant send manifest to client');
+      return;
+    }
+    this.logger.debug('onClientInit - sending manifest to client');
+    this.eventEmitter.emit('send-to-client', { manifest: this.pluginManifest, type: 'init' });
+  }
+
+  public startBrowserClient(connection: ConnectionType): void {
+    this.logger.info('starting browser-client');
     // eslint-disable-next-line unicorn/prefer-module
     const dirname = __dirname;
     browserSync({
@@ -56,7 +72,7 @@ export default class Display {
           route: '/',
         },
       ],
-      server: [path.resolve(dirname + '/browserclient'), path.resolve(dirname + '/../dist/browserclient')],
+      server: [path.resolve(dirname + '/../dist/browserclient'), this.pluginPath],
     });
   }
 
@@ -85,8 +101,9 @@ export default class Display {
     }
   }
 
-  public onEmulatorMessage(event: string): void {
-    this.eventEmitter.emit('send-to-client', event);
+  public onEmulatorMessage(title: string): void {
+    // TODO: make more generic than just set-title
+    this.eventEmitter.emit('send-to-client', { title, type: 'setTitle' });
   }
 
   private isEventPayload(jsonPayload: unknown): jsonPayload is ClientEvent {

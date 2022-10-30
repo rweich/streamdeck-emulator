@@ -41,11 +41,22 @@
   </div>
 </div>
 
-<div class="plugin-button">
-  the icon of the plugin
-  <br>
-  and the name
+<div class="plugin-info">
+  <div class="plugin-title">
+    <img class="plugin-title__icon" src="" alt="plugin icon">
+    <div class="plugin-title__name">
+      plugin not initialized
+    </div>
+  </div>
+  Actions:
+  <div class="plugin-action-list"></div>
 </div>
+<template id="plugin-action-template">
+  <div class="plugin-action">
+    <div class="plugin-action__icon"><img src="" alt="action icon"></div>
+    <div class="plugin-action__name"></div>
+  </div>
+</template>
 
 <div class="log log--plugin">
   <h3>here comes the log from the plugin</h3>

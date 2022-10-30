@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-import assertType from './AssertType';
+import assertType from '../utils/AssertType';
 import { ManifestType } from './ManifestType';
 
 export const readManifest = (fileName: string): ManifestType => {

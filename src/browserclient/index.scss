@@ -27,6 +27,34 @@ body {
   width: 100px;
 }
 
+.plugin-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.plugin-title__icon {
+  height: 40px;
+  margin-right: 10px;
+  width: 40px;
+}
+
+.plugin-title__name {
+  font-weight: bold;
+}
+
+.plugin-action-list {
+  margin-top: 10px;
+}
+
+.plugin-action {
+  display: flex;
+}
+
+.plugin-action__icon {
+  margin-right: 10px;
+}
+
 .log {
   height: 100%;
   overflow: auto;

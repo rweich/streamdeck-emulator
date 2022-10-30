@@ -59,7 +59,7 @@ export default class PluginLoader {
           this.logger.debug('received connect-ws event');
           dom.window.connectElgatoStreamDeckSocket(connection.port, 'uuidtest', 'register', '{}');
         });
-        this.eventEmitter.emit('ready');
+        this.eventEmitter.emit('ready', manifest);
         return dom;
       })
       .catch((error) => this.logger.error(error));

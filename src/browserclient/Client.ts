@@ -8,6 +8,9 @@ import WebSocket, { MessageEvent } from 'isomorphic-ws';
 import { is, isNumber } from 'ts-type-guards';
 import whenDomReady from 'when-dom-ready';
 
+import { ManifestType } from '../pluginloader/ManifestType';
+import { type InitMessage, type SetTitleMessage } from '../types/SendToClientMessageTypes';
+import assertType from '../utils/AssertType';
 import { ClientEvent } from './ClientEvent';
 
 declare global {
@@ -21,20 +24,32 @@ const HelloEvent = {
 };
 
 export default class Client {
-  private readonly websocket: WebSocket;
   private readonly logger: MixedLogger;
+  private _websocket: WebSocket | undefined;
+  private pluginManifest: ManifestType | undefined;
 
   constructor() {
-    this.logger = createLogger('my-app-logger', {
+    this.logger = createLogger('Client', {
       handlers: [new BrowserConsoleHandler({ timestamps: true })],
       mode: 'mixed',
     }) as MixedLogger;
     this.logger.info('started client', window.___streamdeck_connect);
 
-    this.websocket = this.createWebsocket();
     whenDomReady()
-      .then(() => this.addEventListeners())
+      .then(this.onDomReady.bind(this))
       .catch((error) => this.logger.error(error));
+  }
+
+  public get websocket(): WebSocket {
+    if (this._websocket === undefined) {
+      throw new Error('websocket is not open');
+    }
+    return this._websocket;
+  }
+
+  private onDomReady(): void {
+    this._websocket = this.createWebsocket();
+    this.addEventListeners();
   }
 
   private createWebsocket(): WebSocket {
@@ -52,14 +67,14 @@ export default class Client {
 
   private addEventListeners(): void {
     for (const button of document.querySelectorAll('.action__button-add')) {
-      button.addEventListener('click', (event) => this.toggleButton(event, 'addPlugin'));
+      button.addEventListener('click', (event) => this.sendEventToWebsocket(event, 'addPlugin'));
     }
     for (const button of document.querySelectorAll('.action__button-remove')) {
-      button.addEventListener('click', (event) => this.toggleButton(event, 'removePlugin'));
+      button.addEventListener('click', (event) => this.sendEventToWebsocket(event, 'removePlugin'));
     }
     for (const button of document.querySelectorAll('.action__display')) {
-      button.addEventListener('mousedown', (event) => this.sendKeyEvent(event, 'keyDown'));
-      button.addEventListener('mouseup', (event) => this.sendKeyEvent(event, 'keyUp'));
+      button.addEventListener('mousedown', (event) => this.sendEventToWebsocket(event, 'keyDown'));
+      button.addEventListener('mouseup', (event) => this.sendEventToWebsocket(event, 'keyUp'));
     }
 
     const clientLogContainer = document.querySelector('.log--client');
@@ -70,27 +85,75 @@ export default class Client {
   }
 
   private onMessageFromWebsocket(messageEvent: MessageEvent): void {
-    this.logger.info('got message from websocket:', { title: messageEvent.data });
-    this.setTitle(String(messageEvent.data));
+    let payload: unknown;
+    try {
+      payload = JSON.parse(String(messageEvent.data));
+    } catch (error) {
+      this.logger.error('onMessageFromWebsocket - could not json parse payload', {
+        error,
+        payload: String(messageEvent.data),
+      });
+      return;
+    }
+    this.logger.info('got message from websocket:', { payload });
+    if (this.isSetTitleMessage(payload)) {
+      this.logger.debug('payload is settitle message');
+      this.setTitle(payload.title);
+      return;
+    }
+    if (this.isInitMessage(payload)) {
+      this.initPlugin(payload.manifest);
+      return;
+    }
   }
 
-  private sendKeyEvent(event: Event, type: 'keyDown' | 'keyUp'): void {
-    const { row, column } = this.getEventData(event);
-    this.sendMessage({
-      payload: {
-        action: 'getthisfromtheplugininfo',
-        column,
-        row,
-        uid: 'random',
-      },
-      type: type,
-    });
+  private initPlugin(manifest: ManifestType): void {
+    this.pluginManifest = manifest;
+    const iconElement = document.querySelector('.plugin-title__icon');
+    if (is(HTMLImageElement)(iconElement)) {
+      iconElement.src = `${manifest.Icon}.png`;
+    }
+    const nameElement = document.querySelector('.plugin-title__name');
+    if (nameElement !== null) {
+      nameElement.textContent = manifest.Name;
+    }
+
+    const template = document.querySelector('#plugin-action-template');
+    if (!is(HTMLTemplateElement)(template)) {
+      this.logger.error('action template not found');
+      return;
+    }
+    const actionContainer = document.querySelector('.plugin-action-list');
+    if (!is(HTMLElement)(actionContainer)) {
+      this.logger.error('action container not found');
+      return;
+    }
+    for (const action of manifest.Actions) {
+      const actionHtml = template.content.cloneNode(true);
+      if (!is(DocumentFragment)(actionHtml)) {
+        this.logger.error('action html element not found');
+        continue;
+      }
+      const iconElement = actionHtml.querySelector('.plugin-action__icon img');
+      if (is(HTMLImageElement)(iconElement)) {
+        iconElement.src = `${action.Icon}.png`;
+      }
+      const nameElement = actionHtml.querySelector('.plugin-action__name');
+      if (is(HTMLElement)(nameElement)) {
+        nameElement.textContent = action.Name;
+      }
+      this.logger.debug('appending action');
+      actionContainer.append(actionHtml);
+    }
   }
 
-  private toggleButton(event: Event, type: 'addPlugin' | 'removePlugin'): void {
-    this.logger.debug('toggleButton', { type });
+  private sendEventToWebsocket(event: Event, type: 'keyDown' | 'keyUp' | 'addPlugin' | 'removePlugin'): void {
+    if (this.pluginManifest === undefined) {
+      this.logger.debug('plugin not initialized');
+      return;
+    }
     const { row, column } = this.getEventData(event);
-    this.sendMessage({
+    this.sendWebsocketMessage({
       payload: {
         action: 'getthisfromtheplugininfo',
         column,
@@ -117,7 +180,7 @@ export default class Client {
     return { column, row };
   }
 
-  private sendMessage(message: ClientEvent): void {
+  private sendWebsocketMessage(message: ClientEvent): void {
     this.logger.info('sending ws-message', message);
     this.websocket.send(JSON.stringify(message));
   }
@@ -135,5 +198,24 @@ export default class Client {
       throw new Error('could not find action element');
     }
     return element;
+  }
+
+  private isSetTitleMessage(_message: unknown): _message is SetTitleMessage {
+    const message = _message as SetTitleMessage;
+    return message.hasOwnProperty('type') && message.type === 'setTitle' && message.hasOwnProperty('title');
+  }
+
+  private isInitMessage(_message: unknown): _message is InitMessage {
+    const message = _message as InitMessage;
+    const isInitType = message.hasOwnProperty('type') && message.type === 'init' && message.hasOwnProperty('manifest');
+    if (!isInitType) {
+      return false;
+    }
+    try {
+      assertType(ManifestType, message.manifest);
+    } catch {
+      return false;
+    }
+    return true;
   }
 }

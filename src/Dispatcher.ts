@@ -48,13 +48,12 @@ export default class Dispatcher {
     this.pluginLoader.on('reset-plugin', () => {
       this.eventEmitter.emit('close-plugin-websocket');
     });
-    this.pluginLoader.on('ready', () => {
-      // TODO: instead of this, just send message through ws from here?
-      this.display.onPluginReady('name', 'icon-data');
+    this.pluginLoader.on('ready', (manifest) => {
+      this.display.onPluginReady(manifest);
       this.pluginLoader.connectTo(this.server.connection);
     });
 
-    this.display.start(this.server.connection);
+    this.display.startBrowserClient(this.server.connection);
     this.display.on('button-add-plugin', (event) => this.emulator.onDisplayButtonAdd(event));
     this.display.on('button-remove-plugin', (event) => this.emulator.onDisplayButtonRemove(event));
     this.display.on('button-key-down', (event) => this.emulator.onDisplayButtonDown(event));
@@ -89,7 +88,8 @@ export default class Dispatcher {
 
   private onClientConnection(ws: WebSocket): void {
     this.logger.debug('client said hello 👋');
-    this.display.on('send-to-client', (message) => ws.send(message));
+    this.display.on('send-to-client', (message) => ws.send(JSON.stringify(message)));
+    this.display.onClientInit();
     ws.on('message', (data) => this.display.onClientMessage(JSON.parse(data.toString())));
     // TODO: notify the emulator - send disappear / gone-event?
     ws.on('close', () => this.logger.info('client-ws got closed'));
