@@ -11,7 +11,8 @@
     "lint": "eslint ./src/**/*.ts",
     "lint-tests": "eslint test/**/*.ts",
     "prepare": "husky install",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "watch": "webpack --mode=development --watch"
   },
   "dependencies": {
     "@livy/browser-console-handler": "^1.0.3",
