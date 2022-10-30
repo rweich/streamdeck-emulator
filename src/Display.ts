@@ -9,7 +9,7 @@ import { ButtonEventData } from './browserclient/ButtonEventData';
 import { ClientEvent } from './browserclient/ClientEvent';
 import { ManifestType } from './pluginloader/ManifestType';
 import { ConnectionType } from './Server';
-import { type InitMessage, type SetTitleMessage } from './types/SendToClientMessageTypes';
+import { type InitMessage, type LogMessage, type SetTitleMessage } from './types/SendToClientMessageTypes';
 
 type EventTypes = {
   /** when the plugin gets added to a button */
@@ -21,7 +21,7 @@ type EventTypes = {
   /** when the button gets released */
   'button-key-up': (event: ButtonEventData) => void;
   /** signals that the message should be sent to the client-ws */
-  'send-to-client': (event: SetTitleMessage | InitMessage) => void;
+  'send-to-client': (event: SetTitleMessage | InitMessage | LogMessage) => void;
 };
 
 /** emulates the streamdeck display and handles everything related to the browserclient */
@@ -40,6 +40,10 @@ export default class Display {
     this.pluginManifest = manifest;
     this.logger.info('onPluginReady - sending init event to the client (even if it might not be ready yet)');
     this.eventEmitter.emit('send-to-client', { manifest, type: 'init' });
+  }
+
+  public onLogFromPlugin(level: 'debug' | 'info' | 'warning' | 'error', message: string, payload: unknown): void {
+    this.eventEmitter.emit('send-to-client', { level, message, payload, type: 'log' });
   }
 
   public on<K extends keyof EventTypes>(event: K, callback: EventListener<EventTypes, K>): void {

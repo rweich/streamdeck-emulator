@@ -35,7 +35,7 @@ export default class Dispatcher {
     );
   }
 
-  private static isClientHelloEvent(payload: unknown): boolean {
+  private static isBrowserClientHelloEvent(payload: unknown): boolean {
     return (
       (payload as { clientEvent?: string }).hasOwnProperty('clientEvent')
       && (payload as { clientEvent: string }).clientEvent === 'hello'
@@ -52,6 +52,7 @@ export default class Dispatcher {
       this.display.onPluginReady(manifest);
       this.pluginLoader.connectTo(this.server.connection);
     });
+    this.pluginLoader.on('log', this.display.onLogFromPlugin.bind(this.display));
 
     this.display.startBrowserClient(this.server.connection);
     this.display.on('button-add-plugin', (event) => this.emulator.onDisplayButtonAdd(event));
@@ -69,8 +70,8 @@ export default class Dispatcher {
       const payload = JSON.parse(data.toString());
       if (Dispatcher.isPluginRegisterEvent(payload)) {
         this.onPluginConnection(ws, data);
-      } else if (Dispatcher.isClientHelloEvent(payload)) {
-        this.onClientConnection(ws);
+      } else if (Dispatcher.isBrowserClientHelloEvent(payload)) {
+        this.onBrowserClientConnection(ws);
       }
     });
   }
@@ -86,8 +87,8 @@ export default class Dispatcher {
     ws.emit('message', data); // TODO: not sure if the emulator needs the register event - it wont answer..
   }
 
-  private onClientConnection(ws: WebSocket): void {
-    this.logger.debug('client said hello 👋');
+  private onBrowserClientConnection(ws: WebSocket): void {
+    this.logger.debug('browser-client said hello 👋');
     this.display.on('send-to-client', (message) => ws.send(JSON.stringify(message)));
     this.display.onClientInit();
     ws.on('message', (data) => this.display.onClientMessage(JSON.parse(data.toString())));

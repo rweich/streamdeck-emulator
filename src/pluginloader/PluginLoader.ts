@@ -67,13 +67,18 @@ export default class PluginLoader {
       .catch((error) => this.logger.error(error));
   }
 
+  private log(level: 'debug' | 'info' | 'warning' | 'error', message: string, ...arguments_: unknown[]): void {
+    this.pluginLogger.log(level, message, arguments_);
+    this.eventEmitter.emit('log', level, message, arguments_);
+  }
+
   private createVirtualConsole() {
     const console = new VirtualConsole();
-    console.on('debug', (message, ...arguments_) => this.pluginLogger.debug(message, arguments_));
-    console.on('info', (message, ...arguments_) => this.pluginLogger.info(message, arguments_));
-    console.on('warn', (message, ...arguments_) => this.pluginLogger.warning(message, arguments_));
-    console.on('error', (message, ...arguments_) => this.pluginLogger.error(message, arguments_));
-    console.on('log', (message, ...arguments_) => this.pluginLogger.debug(message, arguments_));
+    console.on('debug', (message, ...arguments_) => this.log('debug', message, ...arguments_));
+    console.on('info', (message, ...arguments_) => this.log('info', message, ...arguments_));
+    console.on('warn', (message, ...arguments_) => this.log('warning', message, ...arguments_));
+    console.on('error', (message, ...arguments_) => this.log('error', message, ...arguments_));
+    console.on('log', (message, ...arguments_) => this.log('debug', message, ...arguments_));
     return console;
   }
 }

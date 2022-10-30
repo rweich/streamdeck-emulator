@@ -8,4 +8,7 @@ export type PluginEvents = {
   'reset-plugin': () => void;
   /** signals the plugin to connect to the passed connection */
   'connect-ws': (connection: ConnectionType) => void;
+
+  /** sends the log from the plugin as an event */
+  log: (level: 'debug' | 'info' | 'warning' | 'error', message: string, payload: unknown) => void;
 };

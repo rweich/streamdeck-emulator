@@ -95,9 +95,8 @@ export default class Client {
       });
       return;
     }
-    this.logger.info('got message from websocket:', { payload });
+    this.logger.debug('got message from websocket:', { payload });
     if (this.isSetTitleMessage(payload)) {
-      this.logger.debug('payload is settitle message');
       this.setTitle(payload.title);
       return;
     }
