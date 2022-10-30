@@ -1,3 +1,4 @@
+import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import { EventsStreamdeck } from '@rweich/streamdeck-events';
 import {
   GetSettingsEvent,
@@ -6,7 +7,6 @@ import {
 } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
 import { ReceivedEventTypes } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received/ReceivedEventTypes';
 import { EventEmitter, EventListener } from 'eventemitter3';
-import { Logger } from 'ts-log';
 
 import { ButtonEventData } from './browserclient/ButtonEventData';
 
@@ -26,11 +26,11 @@ type PluginEvents = EventMapOfUnion<ReceivedEventTypes>;
  * Handles the plugins messages.
  */
 export default class Emulator {
-  private logger: Logger;
+  private logger: MixedLogger;
   private emulatorEvents = new EventEmitter<EmulatorEvents>();
   private pluginEvents = new EventEmitter<PluginEvents>();
 
-  public constructor(logger: Logger) {
+  public constructor(logger: MixedLogger) {
     this.logger = logger;
 
     this.pluginEvents.on('register', this.onRegister.bind(this));
@@ -47,12 +47,12 @@ export default class Emulator {
   }
 
   public onPluginMessage(jsonPayload: unknown): void {
-    this.logger.debug('got message from plugin', jsonPayload);
+    this.logger.debug('got message from plugin', { message: jsonPayload });
     let event: ReceivedEventTypes;
     try {
       event = new EventsStreamdeck().createFromPayload(jsonPayload);
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('cannot create streamdeck event from playload', { error });
       return;
     }
     // TODO: try to do that without the "as never" (not sure how to make typescript understand..)

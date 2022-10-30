@@ -1,6 +1,6 @@
+import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import { EventEmitter, EventListener } from 'eventemitter3';
 import { JSDOM, VirtualConsole } from 'jsdom';
-import { RootLogger } from 'loglevel';
 
 import { ConnectionType } from '../Server';
 import FileWatcher from './FileWatcher';
@@ -12,12 +12,14 @@ export default class PluginLoader {
   private readonly pluginPath: string;
   private readonly eventEmitter = new EventEmitter<PluginEvents>();
   private readonly fileWatcher: FileWatcher;
-  private readonly logger: RootLogger;
+  private readonly logger: MixedLogger;
+  private readonly pluginLogger: MixedLogger;
 
-  constructor(pluginPath: string, fileWatcher: FileWatcher, logger: RootLogger) {
+  constructor(pluginPath: string, fileWatcher: FileWatcher, logger: MixedLogger, pluginLogger: MixedLogger) {
     this.pluginPath = pluginPath;
     this.fileWatcher = fileWatcher;
     this.logger = logger;
+    this.pluginLogger = pluginLogger;
 
     this.fileWatcher.watch(pluginPath).on('change', () => this.eventEmitter.emit('reset-plugin'));
     this.eventEmitter.on('reset-plugin', () => this.createDOM());
@@ -34,7 +36,7 @@ export default class PluginLoader {
   }
 
   private createDOM(): void {
-    this.logger.info('createDOM called - fromfile', this.pluginPath);
+    this.logger.info('createDOM called - fromfile', { path: this.pluginPath });
 
     const manifest = readManifest(`${this.pluginPath}/manifest.json`);
     this.logger.info(`loading plugin from: ${this.pluginPath}/${manifest.CodePath}`);
@@ -67,12 +69,11 @@ export default class PluginLoader {
 
   private createVirtualConsole() {
     const console = new VirtualConsole();
-    const logger = this.logger.getLogger('bound-plugin');
-    console.on('debug', (...arguments_) => logger.debug(...arguments_));
-    console.on('info', (...arguments_) => logger.info(...arguments_));
-    console.on('warn', (...arguments_) => logger.warn(...arguments_));
-    console.on('error', (...arguments_) => logger.error(...arguments_));
-    console.on('log', (...arguments_) => logger.log(...arguments_));
+    console.on('debug', (message, ...arguments_) => this.pluginLogger.debug(message, arguments_));
+    console.on('info', (message, ...arguments_) => this.pluginLogger.info(message, arguments_));
+    console.on('warn', (message, ...arguments_) => this.pluginLogger.warning(message, arguments_));
+    console.on('error', (message, ...arguments_) => this.pluginLogger.error(message, arguments_));
+    console.on('log', (message, ...arguments_) => this.pluginLogger.debug(message, arguments_));
     return console;
   }
 }

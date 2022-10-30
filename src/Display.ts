@@ -1,9 +1,9 @@
+import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import browserSync from 'browser-sync';
 import { EventEmitter, EventListener } from 'eventemitter3';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { Logger } from 'ts-log';
 
 import { ButtonEventData } from './browserclient/ButtonEventData';
 import { ClientEvent } from './browserclient/ClientEvent';
@@ -28,10 +28,10 @@ type EventTypes = {
 export default class Display {
   private readonly eventEmitter = new EventEmitter<EventTypes>();
   private readonly pluginPath: string;
-  private readonly logger: Logger;
+  private readonly logger: MixedLogger;
   private pluginManifest: ManifestType | undefined;
 
-  constructor(pluginPath: string, logger: Logger) {
+  constructor(pluginPath: string, logger: MixedLogger) {
     this.pluginPath = pluginPath;
     this.logger = logger;
   }
@@ -77,7 +77,7 @@ export default class Display {
   }
 
   public onClientMessage(jsonPayload: unknown): void {
-    this.logger.debug('onClientMessage - got message:', jsonPayload);
+    this.logger.debug('onClientMessage - got message:', { message: jsonPayload });
     if (!this.isEventPayload(jsonPayload)) {
       this.logger.error('not a client-event-payload: ' + JSON.stringify(jsonPayload));
       return;

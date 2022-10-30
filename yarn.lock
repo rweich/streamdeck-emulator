@@ -1182,11 +1182,44 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
+"@livy/ansi-line-formatter@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@livy/ansi-line-formatter/-/ansi-line-formatter-1.0.3.tgz#5fd3368e74b3c2c3133013767bf46d2622001da5"
+  integrity sha512-KvnHwV4G/anB3azUFNnnnwsYtU/HQjjgxP/AyVjd2gTXKi5N3Z8b7hXOhOVqTBG7b9nsdFqUQBZ3iW6xKG9hLQ==
+  dependencies:
+    "@livy/contracts" "^1.1.1"
+    "@livy/line-formatter" "^1.0.3"
+    "@livy/util" "^1.0.5"
+    chalk "^4.1.0"
+    emphasize "^4.0.0"
+    js-yaml "^3.13.1"
+    luxon "^1.25.0"
+
 "@livy/browser-console-handler@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@livy/browser-console-handler/-/browser-console-handler-1.0.3.tgz#97b31a77b0eef390079c2004b4bbccfc4729cda6"
   integrity sha512-TU4cZzsQcgiE0Wz1sMygu8Ro7FxX+kVinrPe255+uyois6egXD95MYA2NEKkW3psRFQk916jAIMA+ywFOWcKmw==
   dependencies:
+    "@livy/contracts" "^1.1.1"
+    "@livy/util" "^1.0.5"
+
+"@livy/console-formatter@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@livy/console-formatter/-/console-formatter-1.0.3.tgz#845727b4ed532e4bd363f6eb317c0dcc89560e72"
+  integrity sha512-q70RwxAhRjBuEsvTRQ5hS3zZuiqCNsIM447tLJP3ocm962LtK/5s1MWF2LxiX67xgsELYwhxY+We6zxOPA+5CA==
+  dependencies:
+    "@livy/ansi-line-formatter" "^1.0.3"
+    "@livy/util" "^1.0.5"
+    chalk "^4.1.0"
+    emphasize "^4.0.0"
+    js-yaml "^3.13.1"
+
+"@livy/console-handler@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@livy/console-handler/-/console-handler-1.0.3.tgz#6baf174840599333ce969df98b4de8d7a9baf62e"
+  integrity sha512-Hh8dHUlSLmlqbBaMTbGNOh/+hD/S2gGGh4odO6LYuIMEoqZN3AuJ4XwFDaCMkEA0ErFU+jNjWIV7H4hk0BfCyA==
+  dependencies:
+    "@livy/console-formatter" "^1.0.3"
     "@livy/contracts" "^1.1.1"
     "@livy/util" "^1.0.5"
 
@@ -1216,6 +1249,13 @@
     js-yaml "^3.13.1"
     lowlight "^1.15.0"
     unist-util-map "^2.0.0"
+
+"@livy/line-formatter@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@livy/line-formatter/-/line-formatter-1.0.3.tgz#ae27bb9cd89cd1e4e3d6b246e52e43a4770db139"
+  integrity sha512-B42yPIrIbCGjh9rmIp2y5v6WAFMVvgntgnguJMUAv0EZqaESPBjrpdWJPObUAYJTFiF5e7OL2JmZcWBYXHwU6w==
+  dependencies:
+    "@livy/util" "^1.0.5"
 
 "@livy/logger@^1.0.5":
   version "1.0.5"
@@ -2655,6 +2695,15 @@ emojis-list@^3.0.0:
   resolved "https://registry.yarnpkg.com/emojis-list/-/emojis-list-3.0.0.tgz#5570662046ad29e2e916e71aae260abdff4f6a78"
   integrity sha512-/kyM18EfinwXZbno9FyUGeFh87KC8HRQBQGildHZbEuRyWFOmv1U10o9BBp8XVZDVNNuQKyIGIu5ZYAAXJ0V2Q==
 
+emphasize@^4.0.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/emphasize/-/emphasize-4.2.0.tgz#6b6fdc4d212cb7eafea1c7cdd595dfd6cfc508d9"
+  integrity sha512-yGKvcFUHlBsUPwlxTlzKLR8+zhpbitkFOMCUxN8fTJng9bdH3WNzUGkhdaGdjndSUgqmMPBN7umfwnUdLz5Axg==
+  dependencies:
+    chalk "^4.0.0"
+    highlight.js "~10.4.0"
+    lowlight "~1.17.0"
+
 encodeurl@~1.0.1, encodeurl@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-1.0.2.tgz#ad3ff4c86ec2d029322f5a02c3a9a606c95b3f59"
@@ -3504,6 +3553,11 @@ highlight.js@^10.2.0, highlight.js@~10.7.0:
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.7.3.tgz#697272e3991356e40c3cac566a74eef681756531"
   integrity sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A==
 
+highlight.js@~10.4.0:
+  version "10.4.1"
+  resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.4.1.tgz#d48fbcf4a9971c4361b3f95f302747afe19dbad0"
+  integrity sha512-yR5lWvNz7c85OhVAEAeFhVCc/GV4C30Fjzc/rCP0aCWzc1UUOPUk55dK/qdwTZHBvMZo+eZ2jpk62ndX/xMFlg==
+
 hosted-git-info@^2.1.4:
   version "2.8.9"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
@@ -4193,16 +4247,6 @@ log-update@^4.0.0:
     slice-ansi "^4.0.0"
     wrap-ansi "^6.2.0"
 
-loglevel-plugin-prefix@^0.8.4:
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/loglevel-plugin-prefix/-/loglevel-plugin-prefix-0.8.4.tgz#2fe0e05f1a820317d98d8c123e634c1bd84ff644"
-  integrity sha512-WpG9CcFAOjz/FtNht+QJeGpvVl/cdR6P0z6OcXSkr8wFJOsV2GRj2j10JLfjuA4aYkcKCNIEqRGCyTife9R8/g==
-
-loglevel@^1.7.1:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.8.0.tgz#e7ec73a57e1e7b419cb6c6ac06bf050b67356114"
-  integrity sha512-G6A/nJLRgWOuuwdNuA6koovfEV1YpqqAG4pRUlFaz3jj2QNZ8M4vBqnVA+HBTmU/AMNUtlOsMmSpF6NyOjztbA==
-
 lowercase-keys@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/lowercase-keys/-/lowercase-keys-1.0.1.tgz#6f9e30b47084d971a7c820ff15a6c5167b74c26f"
@@ -4215,6 +4259,14 @@ lowlight@^1.15.0:
   dependencies:
     fault "^1.0.0"
     highlight.js "~10.7.0"
+
+lowlight@~1.17.0:
+  version "1.17.0"
+  resolved "https://registry.yarnpkg.com/lowlight/-/lowlight-1.17.0.tgz#a1143b2fba8239df8cd5893f9fe97aaf8465af4a"
+  integrity sha512-vmtBgYKD+QVNy7tIa7ulz5d//Il9R4MooOVh4nkOf9R9Cb/Dk5TXMSTieg/vDulkBkIWj59/BIlyFQxT9X1oAQ==
+  dependencies:
+    fault "^1.0.0"
+    highlight.js "~10.4.0"
 
 lru-cache@^6.0.0:
   version "6.0.0"
@@ -5618,11 +5670,6 @@ trim-newlines@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-3.0.1.tgz#260a5d962d8b752425b32f3a7db0dcacd176c144"
   integrity sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==
-
-ts-log@^2.2.3:
-  version "2.2.5"
-  resolved "https://registry.yarnpkg.com/ts-log/-/ts-log-2.2.5.tgz#aef3252f1143d11047e2cb6f7cfaac7408d96623"
-  integrity sha512-PGcnJoTBnVGy6yYNFxWVNkdcAuAMstvutN9MgDJIV6L0oG8fB+ZNNy1T+wJzah8RPGor1mZuPQkVfXNDpy9eHA==
 
 ts-node@^10.8.1, ts-node@^10.9.1:
   version "10.9.1"

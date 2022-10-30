@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@livy/browser-console-handler": "^1.0.3",
+    "@livy/console-formatter": "^1.0.3",
+    "@livy/console-handler": "^1.0.3",
     "@livy/dom-handler": "^1.0.3",
     "@livy/logger": "^1.0.5",
     "@rweich/streamdeck-events": "/var/www/js/streamdeck-events/rweich-streamdeck-events-v3.1.4.tgz",
@@ -26,9 +28,6 @@
     "eventemitter3": "^4.0.7",
     "isomorphic-ws": "^5.0.0",
     "jsdom": "^20.0.1",
-    "loglevel": "^1.7.1",
-    "loglevel-plugin-prefix": "^0.8.4",
-    "ts-log": "^2.2.3",
     "ts-type-guards": "^0.7.0",
     "when-dom-ready": "^1.2.12",
     "ws": "^8.10.0"

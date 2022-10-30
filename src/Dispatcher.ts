@@ -1,5 +1,5 @@
+import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import { EventEmitter } from 'eventemitter3';
-import { Logger } from 'ts-log';
 import { Data as WebSocketData, WebSocket } from 'ws';
 
 import Display from './Display';
@@ -18,10 +18,10 @@ export default class Dispatcher {
   private readonly pluginLoader: PluginLoader;
   private readonly emulator: Emulator;
   private readonly display: Display;
-  private readonly logger: Logger;
+  private readonly logger: MixedLogger;
   private readonly eventEmitter = new EventEmitter<EventTypes>();
 
-  constructor(server: Server, plugin: PluginLoader, emulator: Emulator, display: Display, logger: Logger) {
+  constructor(server: Server, plugin: PluginLoader, emulator: Emulator, display: Display, logger: MixedLogger) {
     this.server = server;
     this.pluginLoader = plugin;
     this.emulator = emulator;
@@ -65,7 +65,7 @@ export default class Dispatcher {
   private onConnection(ws: WebSocket): void {
     this.logger.debug('onConnect called - adding our register-event-listener');
     ws.once('message', (data) => {
-      this.logger.debug('received message', data);
+      this.logger.debug('received message', { message: data.toString() });
       const payload = JSON.parse(data.toString());
       if (Dispatcher.isPluginRegisterEvent(payload)) {
         this.onPluginConnection(ws, data);
