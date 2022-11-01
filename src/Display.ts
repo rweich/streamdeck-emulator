@@ -87,16 +87,16 @@ export default class Display {
       return;
     }
     switch (jsonPayload.type) {
-      case 'keyUp':
+      case 'key-up':
         this.eventEmitter.emit('button-key-up', jsonPayload.payload);
         break;
-      case 'keyDown':
+      case 'key-down':
         this.eventEmitter.emit('button-key-down', jsonPayload.payload);
         break;
-      case 'addPlugin':
+      case 'add-action':
         this.eventEmitter.emit('button-add-plugin', jsonPayload.payload);
         break;
-      case 'removePlugin':
+      case 'remove-action':
         this.eventEmitter.emit('button-remove-plugin', jsonPayload.payload);
         break;
       default:
