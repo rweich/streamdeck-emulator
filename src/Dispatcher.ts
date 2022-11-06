@@ -31,7 +31,8 @@ export default class Dispatcher {
 
   private static isPluginRegisterEvent(payload: unknown): boolean {
     return (
-      (payload as { event?: string }).hasOwnProperty('event') && (payload as { event: string }).event === 'register'
+      (payload as { event?: string }).hasOwnProperty('event')
+      && (payload as { event: string }).event === 'registerPlugin'
     );
   }
 
@@ -39,6 +40,13 @@ export default class Dispatcher {
     return (
       (payload as { clientEvent?: string }).hasOwnProperty('clientEvent')
       && (payload as { clientEvent: string }).clientEvent === 'hello'
+    );
+  }
+
+  private static isPiRegisterEvent(payload: unknown): boolean {
+    return (
+      (payload as { event?: string }).hasOwnProperty('event')
+      && (payload as { event: string }).event === 'registerPropertyInspector'
     );
   }
 
@@ -60,7 +68,7 @@ export default class Dispatcher {
     this.display.on('button-key-down', (event) => this.emulator.onDisplayButtonDown(event));
     this.display.on('button-key-up', (event) => this.emulator.onDisplayButtonUp(event));
 
-    this.emulator.on('send-to-display', (event) => this.display.onEmulatorMessage(event));
+    this.emulator.on('send-to-display', (context, title) => this.display.onEmulatorMessage(context, title));
   }
 
   private onConnection(ws: WebSocket): void {
@@ -70,6 +78,8 @@ export default class Dispatcher {
       const payload = JSON.parse(data.toString());
       if (Dispatcher.isPluginRegisterEvent(payload)) {
         this.onPluginConnection(ws, data);
+      } else if (Dispatcher.isPiRegisterEvent(payload)) {
+        this.onPiConnection(ws);
       } else if (Dispatcher.isBrowserClientHelloEvent(payload)) {
         this.onBrowserClientConnection(ws);
       }
@@ -85,6 +95,20 @@ export default class Dispatcher {
     this.emulator.on('send-to-plugin', (message) => ws.send(message));
     ws.on('message', (data) => this.emulator.onPluginMessage(JSON.parse(data.toString())));
     ws.emit('message', data); // TODO: not sure if the emulator needs the register event - it wont answer..
+  }
+
+  private onPiConnection(ws: WebSocket): void {
+    this.logger.debug('message is pi register event');
+    this.emulator.on('send-to-pi', (message) => ws.send(message));
+    this.display.once('button-remove-pi', () => {
+      this.logger.info('closing pi-websocket ...');
+      ws.terminate();
+    });
+    ws.on('message', (data) => this.emulator.onPiMessage(JSON.parse(data.toString())));
+    ws.on('close', () => {
+      this.logger.info('pi-websocket was closed!');
+      this.emulator.off('send-to-pi');
+    });
   }
 
   private onBrowserClientConnection(ws: WebSocket): void {

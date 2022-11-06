@@ -28,6 +28,7 @@
     "eventemitter3": "^4.0.7",
     "isomorphic-ws": "^5.0.0",
     "jsdom": "^20.0.1",
+    "nanoid": "^4.0.0",
     "ts-type-guards": "^0.7.0",
     "when-dom-ready": "^1.2.12",
     "ws": "^8.10.0"

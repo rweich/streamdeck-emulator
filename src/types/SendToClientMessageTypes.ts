@@ -1,6 +1,7 @@
 import { ManifestType } from '../pluginloader/ManifestType';
 
 export type SetTitleMessage = {
+  context: string;
   type: 'setTitle';
   title: string;
 };
@@ -9,7 +10,7 @@ export type InitMessage = {
   manifest: ManifestType;
 };
 export type LogMessage = {
-  type: 'log';
+  type: 'log-plugin' | 'log-pi';
   level: 'debug' | 'info' | 'warning' | 'error';
   message: string;
   payload: unknown;

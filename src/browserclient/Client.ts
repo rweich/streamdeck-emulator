@@ -18,12 +18,20 @@ export default class Client {
   private readonly display: ClientDisplay;
   private readonly messageValidator: MessageValidator;
   private readonly logger: MixedLogger;
+  private readonly pluginLogger: MixedLogger;
 
-  constructor(messenger: Messenger, display: ClientDisplay, messageValidator: MessageValidator, logger: MixedLogger) {
+  constructor(
+    messenger: Messenger,
+    display: ClientDisplay,
+    messageValidator: MessageValidator,
+    logger: MixedLogger,
+    pluginLogger: MixedLogger,
+  ) {
     this.messenger = messenger;
     this.display = display;
     this.messageValidator = messageValidator;
     this.logger = logger;
+    this.pluginLogger = pluginLogger;
   }
 
   public start(): void {
@@ -44,13 +52,18 @@ export default class Client {
       });
       return;
     }
+    if (this.messageValidator.isPluginLogMessage(payload)) {
+      this.pluginLogger.log(payload.level, payload.message, { payload: payload.payload });
+      // don't use the normal logger for this!
+      return;
+    }
     this.logger.debug('got message from websocket:', { payload });
     if (this.messageValidator.isSetTitleMessage(payload)) {
-      this.display.setTitle(payload.title);
+      this.display.setTitle(payload.context, payload.title);
       return;
     }
     if (this.messageValidator.isInitMessage(payload)) {
-      this.display.initActions(payload.manifest);
+      this.display.initByManifest(payload.manifest);
       return;
     }
   }

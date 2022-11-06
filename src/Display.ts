@@ -16,6 +16,8 @@ type EventTypes = {
   'button-add-plugin': (event: ButtonEventData) => void;
   /** when the plugin gets removed from a button */
   'button-remove-plugin': (event: ButtonEventData) => void;
+  /** when the pi gets removed */
+  'button-remove-pi': () => void;
   /** when the button gets pressed */
   'button-key-down': (event: ButtonEventData) => void;
   /** when the button gets released */
@@ -43,11 +45,15 @@ export default class Display {
   }
 
   public onLogFromPlugin(level: 'debug' | 'info' | 'warning' | 'error', message: string, payload: unknown): void {
-    this.eventEmitter.emit('send-to-client', { level, message, payload, type: 'log' });
+    this.eventEmitter.emit('send-to-client', { level, message, payload, type: 'log-plugin' });
   }
 
   public on<K extends keyof EventTypes>(event: K, callback: EventListener<EventTypes, K>): void {
     this.eventEmitter.on(event, callback);
+  }
+
+  public once<K extends keyof EventTypes>(event: K, callback: EventListener<EventTypes, K>): void {
+    this.eventEmitter.once(event, callback);
   }
 
   public onClientInit(): void {
@@ -99,15 +105,17 @@ export default class Display {
       case 'remove-action':
         this.eventEmitter.emit('button-remove-plugin', jsonPayload.payload);
         break;
+      case 'remove-pi':
+        this.eventEmitter.emit('button-remove-pi');
+        break;
       default:
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const completeCheck: never = jsonPayload.type;
     }
   }
 
-  public onEmulatorMessage(title: string): void {
-    // TODO: make more generic than just set-title
-    this.eventEmitter.emit('send-to-client', { title, type: 'setTitle' });
+  public onEmulatorMessage(context: string, title: string): void {
+    this.eventEmitter.emit('send-to-client', { context, title, type: 'setTitle' });
   }
 
   private isEventPayload(jsonPayload: unknown): jsonPayload is ClientEvent {
@@ -116,9 +124,9 @@ export default class Display {
       data.hasOwnProperty('type')
       && data.hasOwnProperty('payload')
       && data.payload.hasOwnProperty('action')
+      && data.payload.hasOwnProperty('context')
       && data.payload.hasOwnProperty('column')
       && data.payload.hasOwnProperty('row')
-      && data.payload.hasOwnProperty('uid')
     );
   }
 }

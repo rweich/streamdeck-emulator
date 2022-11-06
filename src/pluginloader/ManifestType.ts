@@ -1,23 +1,26 @@
 import { Static, Type } from '@sinclair/typebox';
 
 /* eslint-disable sort-keys */
-export const ManifestType = Type.Object({
-  Actions: Type.Array(
+export const ActionType = Type.Object({
+  Icon: Type.String(),
+  Name: Type.String(),
+  States: Type.Array(
     Type.Object({
-      Icon: Type.String(),
-      Name: Type.String(),
-      States: Type.Array(
-        Type.Object({
-          Image: Type.String(),
-          TitleAlignment: Type.String(),
-          FontSize: Type.String(),
-        }),
-      ),
-      SupportedInMultiActions: Type.Boolean(),
-      Tooltip: Type.String(),
-      UUID: Type.String(),
+      Image: Type.String(),
+      TitleAlignment: Type.String(),
+      FontSize: Type.String(),
     }),
   ),
+  SupportedInMultiActions: Type.Boolean(),
+  Tooltip: Type.String(),
+  UUID: Type.String(),
+});
+/* eslint-enable sort-keys */
+export type ActionType = Static<typeof ActionType>;
+
+/* eslint-disable sort-keys */
+export const ManifestType = Type.Object({
+  Actions: Type.Array(ActionType),
   SDKVersion: Type.Number(),
   Author: Type.String(),
   CodePath: Type.String(),

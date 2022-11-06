@@ -4,14 +4,16 @@ import { createLogger as createLivyLogger } from '@livy/logger';
 import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import whenDomReady from 'when-dom-ready';
 
+import ActionButtonFactory from './ActionButtonFactory';
 import Client from './Client';
 import ClientDisplay from './ClientDisplay';
 import MessageValidator from './MessageValidator';
 import Messenger from './Messenger';
+import PiDisplay from './PiDisplay';
 
-function createLogger(channel: string): MixedLogger {
+function createLogger(channel: string, selector = '.log--client'): MixedLogger {
   return createLivyLogger(channel, {
-    handlers: [new BrowserConsoleHandler({ timestamps: true }), new DomHandler('.log--client')],
+    handlers: [new BrowserConsoleHandler({ timestamps: true }), new DomHandler(selector)],
     mode: 'mixed',
   }) as MixedLogger;
 }
@@ -24,9 +26,18 @@ function startup(): void {
 
   new Client(
     messenger,
-    new ClientDisplay(messenger, createLogger('client')),
+    new ClientDisplay(
+      messenger,
+      new ActionButtonFactory(
+        messenger,
+        new PiDisplay(messenger, createLogger('pi-display')),
+        createLogger('action-button'),
+      ),
+      createLogger('client'),
+    ),
     new MessageValidator(),
     createLogger('client'),
+    createLogger('plugin', '.log--plugin'),
   ).start();
 }
 

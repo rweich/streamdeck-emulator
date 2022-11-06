@@ -2,7 +2,7 @@ import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import { EventEmitter, EventListener } from 'eventemitter3';
 import WebSocket, { MessageEvent } from 'isomorphic-ws';
 
-import { type ActionButton } from './ActionButton';
+import { ButtonEventData } from './ButtonEventData';
 import { ClientEvent } from './ClientEvent';
 
 type EventTypes = {
@@ -45,16 +45,21 @@ export default class Messenger {
     this.eventEmitter.on(event, callback);
   }
 
-  public sendButtonEvent(type: 'key-down' | 'key-up' | 'add-action' | 'remove-action', button: ActionButton): void {
+  public sendButtonEvent(
+    type: 'key-down' | 'key-up' | 'add-action' | 'remove-action' | 'remove-pi',
+    button: ButtonEventData,
+  ): void {
+    /* eslint-disable sort-keys */
     this.sendWebsocketMessage({
       payload: {
-        action: 'getthisfromtheplugininfo',
+        action: button.action,
+        context: button.context,
         column: button.column,
         row: button.row,
-        uid: 'random',
       },
       type: type,
     });
+    /* eslint-enable sort-keys */
   }
 
   private sendWebsocketMessage(message: ClientEvent): void {

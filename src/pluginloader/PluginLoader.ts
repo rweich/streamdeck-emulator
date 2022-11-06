@@ -59,7 +59,7 @@ export default class PluginLoader {
         this.eventEmitter.once('reset-plugin', () => dom.window.close());
         this.eventEmitter.once('connect-ws', (connection) => {
           this.logger.debug('received connect-ws event');
-          dom.window.connectElgatoStreamDeckSocket(connection.port, 'uuidtest', 'register', '{}');
+          dom.window.connectElgatoStreamDeckSocket(connection.port, 'pluginUUID', 'registerPlugin', '{}');
         });
         this.eventEmitter.emit('ready', manifest);
         return dom;

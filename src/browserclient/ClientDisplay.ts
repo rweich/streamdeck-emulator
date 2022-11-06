@@ -1,53 +1,67 @@
 import { MixedLogger } from '@livy/logger/lib/mixed-logger';
-import { is, isNumber } from 'ts-type-guards';
+import { is } from 'ts-type-guards';
 
-import { ManifestType } from '../pluginloader/ManifestType';
-import { type ActionButton } from './ActionButton';
+import { type ActionType, type ManifestType } from '../pluginloader/ManifestType';
+import ActionButton from './ActionButton';
+import ActionButtonFactory from './ActionButtonFactory';
 import Messenger from './Messenger';
 
 /** handles all things related to the DOM / displaying stuff */
 export default class ClientDisplay {
   private readonly messenger: Messenger;
+  private readonly actionButtonFactory: ActionButtonFactory;
   private readonly logger: MixedLogger;
 
-  public constructor(messenger: Messenger, logger: MixedLogger) {
+  private readonly actionButtons: ActionButton[] = [];
+  private readonly actionMap = new Map<string, ActionType>();
+  private currentManifest: ManifestType | undefined;
+
+  public constructor(messenger: Messenger, actionButtonFactory: ActionButtonFactory, logger: MixedLogger) {
     this.messenger = messenger;
+    this.actionButtonFactory = actionButtonFactory;
     this.logger = logger;
   }
 
+  /** initializes the display part of the client */
   public start(): void {
-    this.addEventListeners();
-  }
-
-  public setTitle(data: string): void {
-    const titleElement = this.getButtonContainer(0, 0).querySelector('.action__display');
-    if (is(HTMLElement)(titleElement)) {
-      titleElement.innerHTML = data.replace('\n', '<br>');
+    const actionButtonsElements = Array.from(document.querySelectorAll('.action-button')).filter(is(HTMLElement));
+    if (actionButtonsElements.length !== 4) {
+      throw new Error('not enough action buttons');
+    }
+    for (const buttonElement of actionButtonsElements) {
+      this.actionButtons.push(this.actionButtonFactory.createActionButton(buttonElement));
     }
   }
 
-  public initActions(manifest: ManifestType): void {
-    const iconElement = document.querySelector('.plugin-title__icon');
-    if (is(HTMLImageElement)(iconElement)) {
-      iconElement.src = `${manifest.Icon}.png`;
+  public setTitle(context: string, title: string): void {
+    for (const button of this.actionButtons) {
+      if (button.isContext(context)) {
+        button.setTitle(title);
+        return;
+      }
     }
-    const nameElement = document.querySelector('.plugin-title__name');
-    if (nameElement !== null) {
-      nameElement.textContent = manifest.Name;
-    }
+  }
 
-    const template = document.querySelector('#plugin-action-template');
-    if (!is(HTMLTemplateElement)(template)) {
-      this.logger.error('action template not found');
-      return;
+  public initByManifest(manifest: ManifestType): void {
+    try {
+      this.initPluginInfoAndActions(manifest);
+    } catch (error) {
+      this.logger.error('error on initializing: ' + String(error), { error });
     }
-    const actionContainer = document.querySelector('.plugin-action-list');
-    if (!is(HTMLElement)(actionContainer)) {
-      this.logger.error('action container not found');
-      return;
-    }
+  }
+
+  private initPluginInfoAndActions(manifest: ManifestType): void {
+    this.currentManifest = manifest;
+    this.setPluginIcon(manifest.Icon);
+    this.setPluginName(manifest.Name);
+
+    const actionListContainer = this.getActionListContainer();
+    actionListContainer.innerHTML = '';
+    this.actionMap.clear();
+
     for (const action of manifest.Actions) {
-      const actionHtml = template.content.cloneNode(true);
+      this.actionMap.set(action.UUID, action);
+      const actionHtml = this.getActionTemplate().content.cloneNode(true);
       if (!is(DocumentFragment)(actionHtml)) {
         this.logger.error('action html element not found');
         continue;
@@ -60,53 +74,92 @@ export default class ClientDisplay {
       if (is(HTMLElement)(nameElement)) {
         nameElement.textContent = action.Name;
       }
-      this.logger.debug('appending action');
-      actionContainer.append(actionHtml);
+      const actionToggles = Array.from(actionHtml.querySelectorAll('.plugin-action__buttons button')).filter(
+        is(HTMLButtonElement),
+      );
+      for (const toggle of actionToggles) {
+        toggle.addEventListener('click', this.onActionButtonToggleClick.bind(this));
+        toggle.dataset.actionUuid = action.UUID;
+      }
+      this.logger.debug(`appending action ${action.UUID} to list ...`);
+      actionListContainer.append(actionHtml);
     }
   }
 
-  private addEventListeners(): void {
-    for (const button of document.querySelectorAll('.action__button-add')) {
-      button.addEventListener('click', (event) =>
-        this.messenger.sendButtonEvent('add-action', this.extractActionButton(event)),
-      );
+  private onActionButtonToggleClick({ target }): void {
+    if (!is(HTMLElement)(target)) {
+      throw new Error('onActionButtonToggleClick - not a proper element!');
     }
-    for (const button of document.querySelectorAll('.action__button-remove')) {
-      button.addEventListener('click', (event) =>
-        this.messenger.sendButtonEvent('remove-action', this.extractActionButton(event)),
-      );
+
+    const { buttonIndex, actionUuid } = target.dataset;
+    if (buttonIndex === undefined || actionUuid === undefined) {
+      throw new Error('toggle button is missing dataset params');
     }
-    for (const button of document.querySelectorAll('.action__display')) {
-      button.addEventListener('mousedown', (event) =>
-        this.messenger.sendButtonEvent('key-down', this.extractActionButton(event)),
-      );
-      button.addEventListener('mouseup', (event) =>
-        this.messenger.sendButtonEvent('key-up', this.extractActionButton(event)),
-      );
+
+    const isCurrentlyActive = target.classList.contains('user-button--active');
+    // switch all toggle buttons with the same index to off ...
+    const sameIndexButtons = document.querySelectorAll(
+      `.plugin-action__buttons .user-button[data-button-index="${buttonIndex}"]`,
+    );
+    for (const sameButton of sameIndexButtons) {
+      sameButton.classList.remove('user-button--active');
+    }
+
+    const actionInfo = this.actionMap.get(actionUuid);
+    if (actionInfo === undefined) {
+      throw new Error('action info not found in actionmap');
+    }
+    const acctionButton = this.getAcctionButton(Number(buttonIndex));
+
+    if (isCurrentlyActive) {
+      acctionButton.removeAction();
+    } else {
+      acctionButton.addAction(this.getCurrentManifest(), actionInfo);
+      target.classList.add('user-button--active');
     }
   }
 
-  private extractActionButton(event: Event): ActionButton {
-    if (!is(HTMLElement)(event.target)) {
-      throw new Error('togglebutton is no htmlelement');
+  private getAcctionButton(index: number): ActionButton {
+    if (this.actionButtons[index] === undefined) {
+      throw new Error(`button with index ${index} not found!`);
     }
-    const actionElement = event.target.closest('.action');
-    if (!is(HTMLElement)(actionElement)) {
-      throw new Error('no action element found for button');
-    }
-    const row = Number(actionElement.dataset.row);
-    const column = Number(actionElement.dataset.column);
-    if (!isNumber(row) || !isNumber(column)) {
-      throw new Error('no row/column set in action');
-    }
-    return { column, row };
+    return this.actionButtons[index];
   }
 
-  private getButtonContainer(column: number, row: number): HTMLElement {
-    const element = document.querySelector(`.action[data-row="${row}"][data-column="${column}"]`);
-    if (!is(HTMLElement)(element)) {
-      throw new Error('could not find action element');
+  private getActionListContainer(): HTMLElement {
+    const actionContainer = document.querySelector('.plugin-action-list');
+    if (!is(HTMLElement)(actionContainer)) {
+      throw new Error('action container not found');
     }
-    return element;
+    return actionContainer;
+  }
+
+  private getActionTemplate(): HTMLTemplateElement {
+    const template = document.querySelector('#plugin-action-template');
+    if (!is(HTMLTemplateElement)(template)) {
+      throw new Error('action template not found');
+    }
+    return template;
+  }
+
+  private setPluginIcon(icon: string): void {
+    const iconElement = document.querySelector('.plugin-title__icon');
+    if (is(HTMLImageElement)(iconElement)) {
+      iconElement.src = `${icon}.png`;
+    }
+  }
+
+  private setPluginName(name: string): void {
+    const nameElement = document.querySelector('.plugin-title__name');
+    if (nameElement !== null) {
+      nameElement.textContent = name;
+    }
+  }
+
+  private getCurrentManifest(): ManifestType {
+    if (this.currentManifest === undefined) {
+      throw new Error('not properly initialized');
+    }
+    return this.currentManifest;
   }
 }

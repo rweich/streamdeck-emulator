@@ -5,13 +5,30 @@ body {
   height: calc(100vh - 20px);
 
   display: grid;
-  grid-template-rows: 2fr min-content;
-  grid-template-columns: min-content 1fr 1fr 1fr 1fr;
+  grid-template-areas:
+    "actions plugin-info log-plugin log-pi log-client"
+    "pi pi log-plugin log-pi log-client";
+  grid-template-columns: 1fr 1fr 2fr [log-plugin] 2fr [log-pi] 2fr [log-client];
+  grid-template-rows: min-content 1fr;
   column-gap: 10px;
   row-gap: 10px;
 }
 
-.actions {
+.user-button {
+  background: #ff5a5a;
+  border: 1px solid;
+  color: white;
+  cursor: pointer;
+
+  &:hover {
+    color: black;
+  }
+}
+.user-button--active {
+  background: #129100;
+}
+
+.action-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: min-content;
@@ -19,12 +36,56 @@ body {
   row-gap: 10px;
 }
 
-.action__display {
-  border: 1px solid white;
-  cursor: pointer;
-  display: inline-block;
+.action-button {
+  color: #aaa;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: min-content 1fr;
+
+  &:not(.action-button--active) .user-button {
+    background: transparent;
+    color: #aaa;
+    cursor: unset;
+  }
+}
+
+.action-button--active {
+  color: white;
+  .action-button__display_container {
+    border-color: white;
+  }
+  .action__display {
+    cursor: pointer;
+  }
+}
+
+.action-button__display_container {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  justify-self: center;
+
+  border: 1px solid #000;
+  border-radius: 10px;
   height: 100px;
   width: 100px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+
+.action-button__num {
+  grid-row: 2;
+  justify-self: center;
+}
+
+.action-button__toggle_pi {
+  grid-row: 2;
+  grid-column: 2;
+  justify-self: center;
+}
+
+.action__display {
+  height: 100%;
+  width: 100%;
 }
 
 .plugin-title {
@@ -48,11 +109,27 @@ body {
 }
 
 .plugin-action {
-  display: flex;
+  display: grid;
+  grid-template-columns: min-content 1fr;
 }
 
 .plugin-action__icon {
   margin-right: 10px;
+}
+
+.plugin-action__buttons {
+  display: flex;
+  grid-column-start: 1;
+  grid-column-end: 3;
+  justify-content: center;
+
+  button {
+    margin: 0 5px;
+  }
+}
+
+.pi-container {
+  grid-area: pi;
 }
 
 .log {
@@ -72,4 +149,24 @@ body {
       overflow: auto;
     }
   }
+
+  h3 {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #383838;
+    padding-bottom: 10px;
+  }
+}
+
+.log--plugin {
+  grid-area: log-plugin;
+}
+
+.log--pi {
+  grid-area: log-pi;
+}
+
+.log--client {
+  grid-area: log-client;
 }

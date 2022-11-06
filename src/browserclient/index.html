@@ -18,26 +18,37 @@
 </head>
 <body>
 
-<div class="actions">
-  <div class="action" data-row="0" data-column="0">
-    <span class="action__display">0/0</span>
-    <button class="action__button-add">+</button>
-    <button class="action__button-remove">-</button>
+<div class="action-buttons">
+  <div class="action-button" data-row="0" data-column="0">
+    <div class="action-button__display_container">
+      <div class="action__display"></div>
+    </div>
+    <span class="action-button__num">1</span>
+    <button class="action-button__toggle_pi user-button" title="show/hide PI">PI</button>
   </div>
-  <div class="action" data-row="0" data-column="1">
-    <span class="action__display">0/1</span>
-    <button class="action__button-add">+</button>
-    <button class="action__button-remove">-</button>
+
+  <div class="action-button" data-row="0" data-column="1">
+    <div class="action-button__display_container">
+      <div class="action__display"></div>
+    </div>
+    <span class="action-button__num">2</span>
+    <button class="action-button__toggle_pi user-button" title="show/hide PI">PI</button>
   </div>
-  <div class="action" data-row="1" data-column="0">
-    <span class="action__display">1/0</span>
-    <button class="action__button-add">+</button>
-    <button class="action__button-remove">-</button>
+
+  <div class="action-button" data-row="1" data-column="0">
+    <div class="action-button__display_container">
+      <div class="action__display"></div>
+    </div>
+    <span class="action-button__num">3</span>
+    <button class="action-button__toggle_pi user-button" title="show/hide PI">PI</button>
   </div>
-  <div class="action" data-row="1" data-column="1">
-    <span class="action__display">1/1</span>
-    <button class="action__button-add">+</button>
-    <button class="action__button-remove">-</button>
+
+  <div class="action-button" data-row="1" data-column="1">
+    <div class="action-button__display_container">
+      <div class="action__display"></div>
+    </div>
+    <span class="action-button__num">4</span>
+    <button class="action-button__toggle_pi user-button" title="show/hide PI">PI</button>
   </div>
 </div>
 
@@ -55,14 +66,22 @@
   <div class="plugin-action">
     <div class="plugin-action__icon"><img src="" alt="action icon"></div>
     <div class="plugin-action__name"></div>
+    <div class="plugin-action__buttons">
+      <button class="user-button" title="toggle action for button 1" data-button-index="0">1</button>
+      <button class="user-button" title="toggle action for button 2" data-button-index="1">2</button>
+      <button class="user-button" title="toggle action for button 3" data-button-index="2">3</button>
+      <button class="user-button" title="toggle action for button 4" data-button-index="3">4</button>
+    </div>
   </div>
 </template>
 
+<div class="pi-container"></div>
+
 <div class="log log--plugin">
-  <h3>here comes the log from the plugin</h3>
+  <h3>Plugin-Logs</h3>
 </div>
 <div class="log log--pi">
-  <h3>here comes the log from the PI</h3>
+  <h3>PI-Logs</h3>
 </div>
 <div class="log log--client">
   <h3>Emulator-Browser-Logs</h3>
