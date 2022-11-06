@@ -14,6 +14,10 @@ body {
   row-gap: 10px;
 }
 
+a {
+  color: white;
+}
+
 .user-button {
   background: #ff5a5a;
   border: 1px solid;
@@ -169,4 +173,9 @@ body {
 
 .log--client {
   grid-area: log-client;
+}
+
+.docs {
+  text-align: center;
+  margin-top: 20px;
 }

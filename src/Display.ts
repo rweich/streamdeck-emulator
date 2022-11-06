@@ -9,7 +9,12 @@ import { ButtonEventData } from './browserclient/ButtonEventData';
 import { ClientEvent } from './browserclient/ClientEvent';
 import { ManifestType } from './pluginloader/ManifestType';
 import { ConnectionType } from './Server';
-import { type InitMessage, type LogMessage, type SetTitleMessage } from './types/SendToClientMessageTypes';
+import {
+  type InitMessage,
+  type LogMessage,
+  type SetTitleMessage,
+  SetPiContextMessage,
+} from './types/SendToClientMessageTypes';
 
 type EventTypes = {
   /** when the plugin gets added to a button */
@@ -23,7 +28,7 @@ type EventTypes = {
   /** when the button gets released */
   'button-key-up': (event: ButtonEventData) => void;
   /** signals that the message should be sent to the client-ws */
-  'send-to-client': (event: SetTitleMessage | InitMessage | LogMessage) => void;
+  'send-to-client': (event: InitMessage | LogMessage | SetPiContextMessage | SetTitleMessage) => void;
 };
 
 /** emulates the streamdeck display and handles everything related to the browserclient */
@@ -114,8 +119,8 @@ export default class Display {
     }
   }
 
-  public onEmulatorMessage(context: string, title: string): void {
-    this.eventEmitter.emit('send-to-client', { context, title, type: 'setTitle' });
+  public onEmulatorMessage(message: SetPiContextMessage | SetTitleMessage): void {
+    this.eventEmitter.emit('send-to-client', message);
   }
 
   private isEventPayload(jsonPayload: unknown): jsonPayload is ClientEvent {

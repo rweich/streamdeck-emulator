@@ -30,6 +30,7 @@ export default class PiDisplay {
     }
     this.piContainer.innerHTML = '';
     const frame = document.createElement('iframe');
+    // TODO: change content of pi html to send console logs to parent
     frame.src = manifest.PropertyInspectorPath;
     frame.addEventListener('load', () => this.onPiFrameLoad(frame, piContext));
     this.piContainer.append(frame);

@@ -1,7 +1,7 @@
 import { isString } from 'ts-type-guards';
 
 import { ManifestType } from '../pluginloader/ManifestType';
-import { InitMessage, LogMessage, SetTitleMessage } from '../types/SendToClientMessageTypes';
+import { InitMessage, LogMessage, SetPiContextMessage, SetTitleMessage } from '../types/SendToClientMessageTypes';
 import assertType from '../utils/AssertType';
 
 export default class MessageValidator {
@@ -9,10 +9,23 @@ export default class MessageValidator {
     const message = _message as SetTitleMessage;
     return (
       message.hasOwnProperty('type')
-      && message.type === 'setTitle'
-      && message.hasOwnProperty('title')
+      && message.type === 'set-title'
       && message.hasOwnProperty('context')
+      && message.hasOwnProperty('title')
       && isString(message.context)
+      && isString(message.title)
+    );
+  }
+
+  public isSetPiContextMessage(_message: unknown): _message is SetPiContextMessage {
+    const message = _message as SetPiContextMessage;
+    return (
+      message.hasOwnProperty('type')
+      && message.type === 'set-pi-context'
+      && message.hasOwnProperty('context')
+      && message.hasOwnProperty('piContext')
+      && isString(message.context)
+      && isString(message.piContext)
     );
   }
 

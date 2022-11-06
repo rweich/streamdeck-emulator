@@ -1,10 +1,5 @@
 import { ManifestType } from '../pluginloader/ManifestType';
 
-export type SetTitleMessage = {
-  context: string;
-  type: 'setTitle';
-  title: string;
-};
 export type InitMessage = {
   type: 'init';
   manifest: ManifestType;
@@ -14,4 +9,14 @@ export type LogMessage = {
   level: 'debug' | 'info' | 'warning' | 'error';
   message: string;
   payload: unknown;
+};
+export type SetPiContextMessage = {
+  context: string;
+  type: 'set-pi-context';
+  piContext: string;
+};
+export type SetTitleMessage = {
+  context: string;
+  type: 'set-title';
+  title: string;
 };

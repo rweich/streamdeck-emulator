@@ -1,8 +1,8 @@
 import { MixedLogger } from '@livy/logger/lib/mixed-logger';
-import { customAlphabet } from 'nanoid';
 import { is } from 'ts-type-guards';
 
 import { type ActionType, ManifestType } from '../pluginloader/ManifestType';
+import { generateRandomContext } from '../utils/GenerateRandomContext';
 import { ButtonEventData } from './ButtonEventData';
 import Messenger from './Messenger';
 import PiDisplay from './PiDisplay';
@@ -49,15 +49,10 @@ export default class ActionButton {
     }
     this.actionElement.classList.add('action-button--active');
 
-    this.actionElement
-      .querySelector('.action-button__toggle_pi')
-      ?.addEventListener('click', this.onPiToggleClick.bind(this));
-
     this.isActive = true;
     this.currentManifest = manifest;
     this.currentActionInfo = actionInfo;
-    this.currentContext = this.generateRandomContext();
-    console.log('da context', this.currentContext);
+    this.currentContext = generateRandomContext();
     this.messenger.sendButtonEvent('add-action', this.getButtonEventData());
     this.logger.info('added action to button', {
       action: actionInfo,
@@ -83,6 +78,13 @@ export default class ActionButton {
     this.actionDisplay.textContent = title;
   }
 
+  public setPiContext(piContext: string): void {
+    this.logger.debug(`got pi-context ${piContext}`);
+    this.actionElement
+      .querySelector('.action-button__toggle_pi')
+      ?.addEventListener('click', ({ target }) => this.onPiToggleClick(target, piContext));
+  }
+
   public isContext(context: string): boolean {
     return this.currentContext !== undefined && this.currentContext === context;
   }
@@ -99,7 +101,7 @@ export default class ActionButton {
     };
   }
 
-  private onPiToggleClick({ target }): void {
+  private onPiToggleClick(target: EventTarget | null, piContext: string): void {
     this.logger.debug('pi toggle button was clicked ...');
     if (this.currentManifest === undefined) {
       throw new Error('actionbutton was not properly initialized');
@@ -111,13 +113,9 @@ export default class ActionButton {
     if (isPiActive) {
       this.piDisplay.hidePi();
     } else {
-      this.piDisplay.showPi(this.currentManifest, this.generateRandomContext());
+      this.piDisplay.showPi(this.currentManifest, piContext);
     }
     target.classList.toggle('user-button--active', !isPiActive);
-  }
-
-  private generateRandomContext(): string {
-    return customAlphabet('1234567890ABCDEF', 32)();
   }
 
   private onMouseDown(): void {

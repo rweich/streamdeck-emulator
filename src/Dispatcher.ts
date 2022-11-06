@@ -68,7 +68,7 @@ export default class Dispatcher {
     this.display.on('button-key-down', (event) => this.emulator.onDisplayButtonDown(event));
     this.display.on('button-key-up', (event) => this.emulator.onDisplayButtonUp(event));
 
-    this.emulator.on('send-to-display', (context, title) => this.display.onEmulatorMessage(context, title));
+    this.emulator.on('send-to-display', (message) => this.display.onEmulatorMessage(message));
   }
 
   private onConnection(ws: WebSocket): void {

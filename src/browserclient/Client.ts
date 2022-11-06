@@ -66,5 +66,9 @@ export default class Client {
       this.display.initByManifest(payload.manifest);
       return;
     }
+    if (this.messageValidator.isSetPiContextMessage(payload)) {
+      this.display.setPiContext(payload.context, payload.piContext);
+      return;
+    }
   }
 }

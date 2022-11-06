@@ -3,23 +3,28 @@ import { EventsStreamdeck } from '@rweich/streamdeck-events';
 import {
   GetSettingsEvent,
   RegisterEvent,
+  SetSettingsEvent,
   SetTitleEvent,
 } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
 import { ReceivedEventTypes } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received/ReceivedEventTypes';
 import { EventEmitter, EventListener } from 'eventemitter3';
 
 import { ButtonEventData } from './browserclient/ButtonEventData';
+import { SetPiContextMessage, SetTitleMessage } from './types/SendToClientMessageTypes';
+import { generateRandomContext } from './utils/GenerateRandomContext';
 
 type EmulatorEvents = {
   'send-to-plugin': (message: unknown) => void;
   'send-to-pi': (message: unknown) => void;
-  'send-to-display': (context: string, title: string) => void;
+  'send-to-display': (message: SetPiContextMessage | SetTitleMessage) => void;
 };
 
 type EventMapOfUnion<T extends { event: string }> = {
   [P in T['event']]: (event: Extract<T, { event: P }>) => void;
 };
 type PluginPiEvents = EventMapOfUnion<ReceivedEventTypes>;
+
+type RegisteredButton = ButtonEventData & { piContext: string; settings: unknown };
 
 /**
  * Emulates the streamdeck "core"
@@ -32,13 +37,18 @@ export default class Emulator {
   private pluginEvents = new EventEmitter<PluginPiEvents>();
   private piEvents = new EventEmitter<PluginPiEvents>();
 
+  private readonly registeredButtons = new Map<string, RegisteredButton>();
+
   public constructor(logger: MixedLogger) {
     this.logger = logger;
 
     this.pluginEvents.on('register', this.onRegister.bind(this));
     this.pluginEvents.on('setTitle', this.onSetTitle.bind(this));
     this.pluginEvents.on('getSettings', this.onPluginGetSettings.bind(this));
+    this.pluginEvents.on('setSettings', this.onPluginSetSettings.bind(this));
+    this.piEvents.on('register', this.onRegister.bind(this));
     this.piEvents.on('getSettings', this.onPiGetSettings.bind(this));
+    this.piEvents.on('setSettings', this.onPiSetSettings.bind(this));
   }
 
   public on<T extends keyof EmulatorEvents>(event: T, callback: EventListener<EmulatorEvents, T>): void {
@@ -77,14 +87,18 @@ export default class Emulator {
 
   public onDisplayButtonAdd(event: ButtonEventData): void {
     this.logger.debug('onDisplayButtonAdd', event);
+    const piContext = generateRandomContext();
+    this.registeredButtons.set(event.context, { ...event, piContext, settings: {} });
     this.emulatorEvents.emit(
       'send-to-plugin',
       JSON.stringify(new EventsStreamdeck().willAppear(event.action, event.context)),
     );
+    this.emulatorEvents.emit('send-to-display', { context: event.context, piContext, type: 'set-pi-context' });
   }
 
   public onDisplayButtonRemove(event: ButtonEventData): void {
     this.logger.debug('onDisplayButtonRemove', event);
+    this.registeredButtons.delete(event.context);
     this.emulatorEvents.emit(
       'send-to-plugin',
       JSON.stringify(new EventsStreamdeck().willDisappear(event.action, event.context)),
@@ -117,27 +131,67 @@ export default class Emulator {
 
   private onSetTitle(event: SetTitleEvent): void {
     this.logger.debug(`got settitle event with title "${event.title}"`);
-    /**
-     * things to send:
-     *  - title
-     *  - context/uid
-     *
-     * we need to keep track (somewhere) of
-     *  - all the buttons and their contexts
-     *  - their states
-     */
-    this.emulatorEvents.emit('send-to-display', event.context, event.title);
+    this.emulatorEvents.emit('send-to-display', { context: event.context, title: event.title, type: 'set-title' });
   }
 
-  private onPluginGetSettings(event: GetSettingsEvent): void {
-    this.logger.debug(`got getsettings event from th plugin`, event);
-    // todo: get settings from somewhere(?)
-    //  send settings back to plugin -> didreceivesettings
+  private onPluginGetSettings({ context }: GetSettingsEvent): void {
+    this.logger.debug(`got getsettings event from th plugin`);
+    this.sendSettingsToPlugin(context);
   }
 
-  private onPiGetSettings(event: GetSettingsEvent): void {
+  private onPluginSetSettings({ context, payload }: SetSettingsEvent): void {
+    const button = this.getRegisteredButtonByButtonContext(context);
+    this.registeredButtons.set(context, { ...button, settings: payload });
+    this.sendSettingsToPi(button.piContext);
+  }
+
+  private onPiGetSettings({ context: piContext }: GetSettingsEvent): void {
     this.logger.debug(`got getsettings event from the PI`);
-    // todo: get settings from somewhere(?)
-    //  send settings back to plugin -> didreceivesettings
+    this.sendSettingsToPi(piContext);
+  }
+
+  private onPiSetSettings(event: SetSettingsEvent): void {
+    const button = this.getRegisteredButtonByPiContext(event.context);
+    this.registeredButtons.set(button.context, { ...button, settings: event.payload });
+    this.sendSettingsToPlugin(button.context);
+  }
+
+  private sendSettingsToPlugin(context: string): void {
+    this.logger.debug(`sending settings to plugin (context: ${context}`);
+    const button = this.getRegisteredButtonByButtonContext(context);
+    this.emulatorEvents.emit(
+      'send-to-plugin',
+      JSON.stringify(
+        new EventsStreamdeck().didReceiveSettings(button.action, button.context, { settings: button.settings }),
+      ),
+    );
+  }
+
+  private sendSettingsToPi(piContext: string): void {
+    this.logger.debug(`sending settings to pi (pi-context: ${piContext}`);
+    const button = this.getRegisteredButtonByPiContext(piContext);
+    this.emulatorEvents.emit(
+      'send-to-pi',
+      JSON.stringify(
+        new EventsStreamdeck().didReceiveSettings(button.action, button.piContext, { settings: button.settings }),
+      ),
+    );
+  }
+
+  private getRegisteredButtonByPiContext(piContext: string): RegisteredButton {
+    for (const [, data] of this.registeredButtons.entries()) {
+      if (data.piContext === piContext) {
+        return data;
+      }
+    }
+    throw new Error(`registered button for pi-context "${piContext}" not found`);
+  }
+
+  private getRegisteredButtonByButtonContext(context: string): RegisteredButton {
+    const button = this.registeredButtons.get(context);
+    if (button === undefined) {
+      throw new Error(`could not find registered button for context ${context}`);
+    }
+    return button;
   }
 }

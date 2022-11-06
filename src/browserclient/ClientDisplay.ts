@@ -50,6 +50,15 @@ export default class ClientDisplay {
     }
   }
 
+  public setPiContext(context: string, piContext: string): void {
+    for (const button of this.actionButtons) {
+      if (button.isContext(context)) {
+        button.setPiContext(piContext);
+        return;
+      }
+    }
+  }
+
   private initPluginInfoAndActions(manifest: ManifestType): void {
     this.currentManifest = manifest;
     this.setPluginIcon(manifest.Icon);
