@@ -1,7 +1,7 @@
 import { MixedLogger } from '@livy/logger/lib/mixed-logger';
 import { is } from 'ts-type-guards';
 
-import { ManifestType } from '../pluginloader/ManifestType';
+import { type ActionType, type ManifestType } from '../pluginloader/ManifestType';
 import Messenger from './Messenger';
 
 type Connectable = {
@@ -23,7 +23,14 @@ export default class PiDisplay {
     this.piContainer = piContainer;
   }
 
-  public showPi(manifest: ManifestType, piContext: string): void {
+  public showPi(
+    manifest: ManifestType,
+    actionInfo: ActionType,
+    piContext: string,
+    context: string,
+    column: number,
+    row: number,
+  ): void {
     if (manifest.PropertyInspectorPath === undefined) {
       this.logger.info('no pi-path in manifest');
       return;
@@ -32,7 +39,7 @@ export default class PiDisplay {
     const frame = document.createElement('iframe');
     // TODO: change content of pi html to send console logs to parent
     frame.src = manifest.PropertyInspectorPath;
-    frame.addEventListener('load', () => this.onPiFrameLoad(frame, piContext));
+    frame.addEventListener('load', () => this.onPiFrameLoad(frame, actionInfo, piContext, context, column, row));
     this.piContainer.append(frame);
   }
 
@@ -41,7 +48,14 @@ export default class PiDisplay {
     this.piContainer.innerHTML = '';
   }
 
-  private onPiFrameLoad(frame: HTMLIFrameElement, piContext: string): void {
+  private onPiFrameLoad(
+    frame: HTMLIFrameElement,
+    actionInfo: ActionType,
+    piContext: string,
+    context: string,
+    column: number,
+    row: number,
+  ): void {
     const contentWindow = frame.contentWindow;
     if (contentWindow === null) {
       return;
@@ -55,7 +69,18 @@ export default class PiDisplay {
       piContext,
       'registerPropertyInspector',
       '{}',
-      '{}',
+      JSON.stringify({
+        action: actionInfo.UUID,
+        context,
+        device: 'uniqueValue',
+        payload: {
+          coordinates: {
+            column,
+            row,
+          },
+          settings: {},
+        },
+      }),
     );
   }
 

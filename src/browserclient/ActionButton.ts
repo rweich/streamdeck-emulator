@@ -116,7 +116,11 @@ export default class ActionButton {
 
   private onPiToggleClick(target: EventTarget | null, piContext: string): void {
     this.logger.debug('pi toggle button was clicked ...');
-    if (this.currentManifest === undefined) {
+    if (
+      this.currentManifest === undefined
+      || this.currentActionInfo === undefined
+      || this.currentContext === undefined
+    ) {
       throw new Error('actionbutton was not properly initialized');
     }
     if (!is(HTMLElement)(target)) {
@@ -126,7 +130,14 @@ export default class ActionButton {
     if (isPiActive) {
       this.piDisplay.hidePi();
     } else {
-      this.piDisplay.showPi(this.currentManifest, piContext);
+      this.piDisplay.showPi(
+        this.currentManifest,
+        this.currentActionInfo,
+        piContext,
+        this.currentContext,
+        this.column,
+        this.row,
+      );
     }
     target.classList.toggle('user-button--active', !isPiActive);
   }
