@@ -12,8 +12,9 @@ import { ConnectionType } from './Server';
 import {
   type InitMessage,
   type LogMessage,
+  type SetImageMessage,
+  type SetPiContextMessage,
   type SetTitleMessage,
-  SetPiContextMessage,
 } from './types/SendToClientMessageTypes';
 
 type EventTypes = {
@@ -28,7 +29,7 @@ type EventTypes = {
   /** when the button gets released */
   'button-key-up': (event: ButtonEventData) => void;
   /** signals that the message should be sent to the client-ws */
-  'send-to-client': (event: InitMessage | LogMessage | SetPiContextMessage | SetTitleMessage) => void;
+  'send-to-client': (event: InitMessage | LogMessage | SetImageMessage | SetPiContextMessage | SetTitleMessage) => void;
 };
 
 /** emulates the streamdeck display and handles everything related to the browserclient */
@@ -119,7 +120,7 @@ export default class Display {
     }
   }
 
-  public onEmulatorMessage(message: SetPiContextMessage | SetTitleMessage): void {
+  public onEmulatorMessage(message: SetPiContextMessage | SetTitleMessage | SetImageMessage): void {
     this.eventEmitter.emit('send-to-client', message);
   }
 

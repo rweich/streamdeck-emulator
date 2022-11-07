@@ -90,6 +90,18 @@ a {
 .action__display {
   height: 100%;
   width: 100%;
+  background-size: 100%;
+}
+.action__display--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  div {
+    text-align: center;
+    white-space: nowrap;
+  }
 }
 
 .plugin-title {

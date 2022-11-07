@@ -42,6 +42,15 @@ export default class ClientDisplay {
     }
   }
 
+  public setImage(context: string, image: string): void {
+    for (const button of this.actionButtons) {
+      if (button.isContext(context)) {
+        button.setImage(image);
+        return;
+      }
+    }
+  }
+
   public initByManifest(manifest: ManifestType): void {
     try {
       this.initPluginInfoAndActions(manifest);

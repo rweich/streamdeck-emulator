@@ -14,6 +14,7 @@ export default class ActionButton {
   private readonly logger: MixedLogger;
 
   private readonly actionDisplay: HTMLElement;
+  private readonly actionDisplayText: HTMLElement;
   private readonly row: number;
   private readonly column: number;
   private isActive = false;
@@ -38,7 +39,12 @@ export default class ActionButton {
     if (!is(HTMLElement)(actiondisplay)) {
       throw new Error("where's the button?");
     }
+    const actionDisplayText = actiondisplay.querySelector('div');
+    if (!is(HTMLElement)(actionDisplayText)) {
+      throw new Error("where's the button text container?");
+    }
     this.actionDisplay = actiondisplay;
+    this.actionDisplayText = actionDisplayText;
     actiondisplay.addEventListener('mousedown', this.onMouseDown.bind(this));
     actiondisplay.addEventListener('mouseup', this.onMouseUp.bind(this));
   }
@@ -75,7 +81,14 @@ export default class ActionButton {
     if (!this.isActive) {
       return;
     }
-    this.actionDisplay.textContent = title;
+    this.actionDisplayText.textContent = title;
+  }
+
+  public setImage(image: string): void {
+    if (!this.isActive) {
+      return;
+    }
+    this.actionDisplay.style.backgroundImage = `url('${image}')`;
   }
 
   public setPiContext(piContext: string): void {
@@ -118,15 +131,15 @@ export default class ActionButton {
     target.classList.toggle('user-button--active', !isPiActive);
   }
 
-  private onMouseDown(): void {
-    if (!this.isActive) {
+  private onMouseDown(event: MouseEvent): void {
+    if (!this.isActive || event.button !== 0) {
       return;
     }
     this.messenger.sendButtonEvent('key-down', this.getButtonEventData());
   }
 
-  private onMouseUp(): void {
-    if (!this.isActive) {
+  private onMouseUp(event: MouseEvent): void {
+    if (!this.isActive || event.button !== 0) {
       return;
     }
     this.messenger.sendButtonEvent('key-up', this.getButtonEventData());

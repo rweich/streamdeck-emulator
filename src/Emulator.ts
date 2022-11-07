@@ -3,20 +3,21 @@ import { EventsStreamdeck } from '@rweich/streamdeck-events';
 import {
   GetSettingsEvent,
   RegisterEvent,
+  SetImageEvent,
   SetSettingsEvent,
   SetTitleEvent,
 } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received';
 import { ReceivedEventTypes } from '@rweich/streamdeck-events/dist/Events/Streamdeck/Received/ReceivedEventTypes';
 import { EventEmitter, EventListener } from 'eventemitter3';
 
-import { ButtonEventData } from './browserclient/ButtonEventData';
-import { SetPiContextMessage, SetTitleMessage } from './types/SendToClientMessageTypes';
+import { type ButtonEventData } from './browserclient/ButtonEventData';
+import { type SetImageMessage, type SetPiContextMessage, type SetTitleMessage } from './types/SendToClientMessageTypes';
 import { generateRandomContext } from './utils/GenerateRandomContext';
 
 type EmulatorEvents = {
   'send-to-plugin': (message: unknown) => void;
   'send-to-pi': (message: unknown) => void;
-  'send-to-display': (message: SetPiContextMessage | SetTitleMessage) => void;
+  'send-to-display': (message: SetPiContextMessage | SetTitleMessage | SetImageMessage) => void;
 };
 
 type EventMapOfUnion<T extends { event: string }> = {
@@ -44,6 +45,7 @@ export default class Emulator {
 
     this.pluginEvents.on('register', this.onRegister.bind(this));
     this.pluginEvents.on('setTitle', this.onSetTitle.bind(this));
+    this.pluginEvents.on('setImage', this.onSetImage.bind(this));
     this.pluginEvents.on('getSettings', this.onPluginGetSettings.bind(this));
     this.pluginEvents.on('setSettings', this.onPluginSetSettings.bind(this));
     this.piEvents.on('register', this.onRegister.bind(this));
@@ -132,6 +134,11 @@ export default class Emulator {
   private onSetTitle(event: SetTitleEvent): void {
     this.logger.debug(`got settitle event with title "${event.title}"`);
     this.emulatorEvents.emit('send-to-display', { context: event.context, title: event.title, type: 'set-title' });
+  }
+
+  private onSetImage(event: SetImageEvent): void {
+    this.logger.debug(`got settitle event with title "${event.image}"`);
+    this.emulatorEvents.emit('send-to-display', { context: event.context, image: event.image, type: 'set-image' });
   }
 
   private onPluginGetSettings({ context }: GetSettingsEvent): void {

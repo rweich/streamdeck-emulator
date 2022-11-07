@@ -20,3 +20,8 @@ export type SetTitleMessage = {
   type: 'set-title';
   title: string;
 };
+export type SetImageMessage = {
+  context: string;
+  type: 'set-image';
+  image: string;
+};

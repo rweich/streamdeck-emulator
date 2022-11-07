@@ -58,17 +58,23 @@ export default class Client {
       return;
     }
     this.logger.debug('got message from websocket:', { payload });
-    if (this.messageValidator.isSetTitleMessage(payload)) {
-      this.display.setTitle(payload.context, payload.title);
-      return;
-    }
     if (this.messageValidator.isInitMessage(payload)) {
       this.display.initByManifest(payload.manifest);
+      return;
+    }
+    if (this.messageValidator.isSetImageMessage(payload)) {
+      this.display.setImage(payload.context, payload.image);
       return;
     }
     if (this.messageValidator.isSetPiContextMessage(payload)) {
       this.display.setPiContext(payload.context, payload.piContext);
       return;
     }
+    if (this.messageValidator.isSetTitleMessage(payload)) {
+      this.display.setTitle(payload.context, payload.title);
+      return;
+    }
+
+    this.logger.error('got a message i could not handle (ᵟຶ︵ ᵟຶ)');
   }
 }

@@ -24,6 +24,7 @@
     "@sinclair/typebox": "^0.25.1",
     "ajv": "^8.11.0",
     "browser-sync": "^2.26.14",
+    "canvas": "^2.10.2",
     "chokidar": "^3.5.1",
     "eventemitter3": "^4.0.7",
     "isomorphic-ws": "^5.0.0",

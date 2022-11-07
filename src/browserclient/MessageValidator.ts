@@ -1,7 +1,13 @@
 import { isString } from 'ts-type-guards';
 
 import { ManifestType } from '../pluginloader/ManifestType';
-import { InitMessage, LogMessage, SetPiContextMessage, SetTitleMessage } from '../types/SendToClientMessageTypes';
+import {
+  type InitMessage,
+  type LogMessage,
+  type SetImageMessage,
+  type SetPiContextMessage,
+  type SetTitleMessage,
+} from '../types/SendToClientMessageTypes';
 import assertType from '../utils/AssertType';
 
 export default class MessageValidator {
@@ -14,6 +20,18 @@ export default class MessageValidator {
       && message.hasOwnProperty('title')
       && isString(message.context)
       && isString(message.title)
+    );
+  }
+
+  public isSetImageMessage(_message: unknown): _message is SetImageMessage {
+    const message = _message as SetImageMessage;
+    return (
+      message.hasOwnProperty('type')
+      && message.type === 'set-image'
+      && message.hasOwnProperty('context')
+      && message.hasOwnProperty('image')
+      && isString(message.context)
+      && isString(message.image)
     );
   }
 
